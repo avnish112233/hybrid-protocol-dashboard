@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/com
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "./Eyebrow";
 import { StreakBar } from "./StreakBar";
+import { CelebrationBurst } from "./CelebrationBurst";
 import {
   weeklyPlan,
   history as initialHistory,
@@ -44,16 +45,23 @@ export function TrainTab() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [history, setHistory] = useState<HistoryEntry[]>(initialHistory);
   const [recording, setRecording] = useState<{ day: DayPlan; ex: Exercise } | null>(null);
+  const [burst, setBurst] = useState<{ key: string; n: number } | null>(null);
+  const [dayBurst, setDayBurst] = useState<{ day: string; n: number } | null>(null);
+  const [celebratedDays, setCelebratedDays] = useState<Set<string>>(new Set());
 
   const isCompleted = (day: string, exerciseId: string) =>
     logs.some((l) => l.day === day && l.exerciseId === exerciseId);
 
+  const isDayComplete = (dayKey: string, exercises: Exercise[]) =>
+    exercises.length > 0 && exercises.every((ex) => isCompleted(dayKey, ex.id));
+
   const saveLog = (sets: SetRow[], exName: string, session: SessionType, day: string, exerciseId: string) => {
     const entry: LogEntry = { exerciseId, sets, day };
-    setLogs((prev) => [
-      ...prev.filter((l) => !(l.day === entry.day && l.exerciseId === entry.exerciseId)),
+    const nextLogs = [
+      ...logs.filter((l) => !(l.day === entry.day && l.exerciseId === entry.exerciseId)),
       entry,
-    ]);
+    ];
+    setLogs(nextLogs);
     const volume = sets.reduce((acc, s) => acc + s.reps * s.weight, 0);
     setHistory((prev) => [
       {
@@ -65,6 +73,17 @@ export function TrainTab() {
       },
       ...prev,
     ]);
+    setBurst({ key: `${day}-${exerciseId}`, n: Date.now() });
+    const dayPlan = weeklyPlan.find((d) => d.day === day);
+    if (dayPlan && dayPlan.exercises.length > 0) {
+      const allDone = dayPlan.exercises.every((ex) =>
+        nextLogs.some((l) => l.day === day && l.exerciseId === ex.id),
+      );
+      if (allDone && !celebratedDays.has(day)) {
+        setCelebratedDays((prev) => new Set(prev).add(day));
+        setDayBurst({ day, n: Date.now() });
+      }
+    }
   };
 
   return (
@@ -81,12 +100,23 @@ export function TrainTab() {
         </h2>
 
         <Accordion type="multiple" className="mt-3 space-y-2">
-          {weeklyPlan.map((day) => (
+          {weeklyPlan.map((day) => {
+            const dayDone = isDayComplete(day.day, day.exercises);
+            return (
             <AccordionItem
               key={day.day}
               value={day.day}
-              className="overflow-hidden rounded-2xl border-0 bg-card shadow-[var(--shadow-soft)]"
+              className={cn(
+                "relative overflow-visible rounded-2xl border-0 bg-card shadow-[var(--shadow-soft)] transition-colors",
+                dayDone && "bg-[color-mix(in_oklab,var(--status-optimal)_12%,var(--card))]",
+                dayBurst?.day === day.day && "animate-day-complete",
+              )}
             >
+              {dayBurst?.day === day.day && (
+                <span className="pointer-events-none absolute left-1/2 top-6">
+                  <CelebrationBurst trigger={dayBurst.n} count={18} />
+                </span>
+              )}
               <AccordionTrigger className="px-4 py-3 hover:no-underline [&>svg]:hidden">
                 <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 w-full">
                   <div className="text-left">
@@ -111,7 +141,13 @@ export function TrainTab() {
                     </span>
                     <div className="mt-1 truncate text-xs text-muted-foreground">{day.focus}</div>
                   </div>
-                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform" />
+                  {dayDone ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--status-optimal)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
+                      <Check className="h-3 w-3" /> Done
+                    </span>
+                  ) : (
+                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform" />
+                  )}
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-3">
@@ -121,14 +157,20 @@ export function TrainTab() {
                   <ul className="divide-y divide-border border-t border-border">
                     {day.exercises.map((ex) => {
                       const done = isCompleted(day.day, ex.id);
+                      const exKey = `${day.day}-${ex.id}`;
                       return (
                         <li
                           key={ex.id}
                           className={cn(
-                            "flex items-center justify-between gap-3 py-2.5",
+                            "relative flex items-center justify-between gap-3 py-2.5",
                             done && "opacity-50",
                           )}
                         >
+                          {burst?.key === exKey && (
+                            <span className="pointer-events-none absolute right-10 top-1/2 -translate-y-1/2">
+                              <CelebrationBurst trigger={burst.n} />
+                            </span>
+                          )}
                           <div className="min-w-0">
                             <div className={cn("text-sm font-bold text-foreground", done && "line-through")}>
                               {ex.name}
@@ -158,7 +200,8 @@ export function TrainTab() {
                 )}
               </AccordionContent>
             </AccordionItem>
-          ))}
+            );
+          })}
         </Accordion>
       </section>
 

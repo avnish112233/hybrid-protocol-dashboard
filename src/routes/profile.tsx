@@ -18,7 +18,7 @@ export const Route = createFileRoute("/profile")({
 });
 
 function ProfilePage() {
-  const [tab, setTab] = useState<"overview" | "train">("overview");
+  const [tab, setTab] = useState<"overview" | "train">("train");
   return (
     <main className="min-h-screen bg-background">
       <ProfileHeader />

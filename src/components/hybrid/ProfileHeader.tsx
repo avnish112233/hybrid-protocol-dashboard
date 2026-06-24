@@ -1,21 +1,5 @@
 import { athlete } from "@/data/athlete";
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col">
-      <span
-        className="text-xl font-medium leading-none tracking-tight text-foreground"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
-        {value}
-      </span>
-      <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
-      </span>
-    </div>
-  );
-}
-
 export function ProfileHeader() {
   const initials = athlete.name.split(" ").slice(0, 2).map((n) => n[0]).join("");
   return (
@@ -39,13 +23,10 @@ export function ProfileHeader() {
           </h1>
         </div>
       </div>
-      <div className="mt-5 flex items-center gap-5 rounded-2xl bg-surface px-5 py-4">
-        <Stat label="Height" value={athlete.height} />
-        <span className="h-8 w-px bg-border" />
-        <Stat label="Weight" value={athlete.weight} />
-        <span className="h-8 w-px bg-border" />
-        <Stat label="Age" value={`${athlete.age}`} />
-      </div>
+      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+        You are training hard and moving towards becoming better. When you become better,
+        it is important to know yourself.
+      </p>
     </header>
   );
 }
