@@ -1,70 +1,107 @@
-# Hybrid Protocol — Build Plan
+# Hybrid Protocol — Redesign & Feature Pass
 
-A mobile-first, industrial light-theme web app for Vital Insights. Two routes: a tappable banner landing and an athlete profile with Overview + Train tabs. All data mocked but typed so it can later be wired to a real source.
+## 1. Visual overhaul — "Apple Health / Fitness"
 
-## Design system (src/styles.css)
+Replace the industrial light theme with a softer, sleeker system.
 
-Update tokens to the industrial palette:
-- `--background` #F7F6F4, `--card` #FFFFFF, `--border` #E8E6E2
-- `--foreground` #1A1A1A, `--muted-foreground` #6B6B6B
-- `--primary` #E8420A (orange), `--primary-hover` #E56332
-- `--radius` 4px (sharp)
-- Fonts via `<link>` in `__root.tsx`: Archivo Black (display), Inter (body). Add `--font-display` and `--font-sans` in `@theme`.
-- Headings: uppercase, tight tracking. Eyebrow labels: 11px uppercase, letter-spaced, muted.
-- Hairline dividers, no shadows beyond a faint 1px border.
-- Motion: 150ms fade/slide on tab change, no bounce.
+**Tokens (`src/styles.css`)**
+- Background `#FFFFFF`, surface `#F2F2F7`, card `#FFFFFF`, border `#E5E5EA`
+- Foreground `#1C1C1E`, muted `#8E8E93`
+- Accent (orange) `#FF6B35` — used ONLY for: brand mark, primary CTA, streak ring, active tab indicator. Never on numeric values.
+- Status colors (semantic, used everywhere a value is judged):
+  - `--status-optimal` `#30D158` (green)
+  - `--status-normal` `#FFD60A` (amber)
+  - `--status-suboptimal` `#FF453A` (red)
+- Radii: `--radius` 16px (cards `rounded-2xl`, controls `rounded-xl`, chips `rounded-full`)
+- Shadows: very soft `0 1px 2px rgba(0,0,0,.04), 0 8px 24px -12px rgba(0,0,0,.06)` — replaces hairline borders on cards
+- Type: keep Inter for body, swap Archivo Black → **Inter Tight** (weights 300/500/700) for display. Large numerals are light-weight (300) and tabular. Drop uppercase tracking on big headings; keep tiny uppercase only on eyebrows.
 
-## Routes
+**Component sweep**
+- Remove 1px hairline borders from cards; use shadow + surface contrast.
+- Round all cards/buttons/sheets/inputs.
+- Drop the lane-stripe industrial motif on the banner; keep it minimal — large light-weight wordmark, single orange dot accent, soft gradient.
+- Eyebrows shrink to 10px uppercase, muted color, no orange.
 
-- `/` → `BannerScreen` (full-bleed, tappable → `/profile`)
-- `/profile` → `ProfilePage` with tab state in URL search param `?tab=overview|train` (persists across navigation)
+## 2. Status indication system
 
-Each route gets its own `head()` metadata.
+New helper `src/lib/status.ts` exporting:
+```ts
+type Status = "optimal" | "normal" | "suboptimal";
+getBenchmarkStatus(value, low, high, min, max): Status
+```
+Plus a small `<StatusDot />` and `<StatusPill />` component (colored dot + label "Optimal / Normal / Suboptimal").
 
-## Components (src/components/hybrid/)
+**Where it's applied**
+- `BenchmarkSlider`: the track itself becomes a 3-segment gradient — red (suboptimal) → amber (normal) → green (optimal) → amber → red, with the optimal band centered on `benchmarkLow..benchmarkHigh`. The numeric readout is rendered in the matching status color (no orange). A status pill sits next to the label.
+- `FunctionalScores`: each sub-test row gets a `status` field in the mock data (you can tune later) and renders a colored dot + value in status color. Category headers show an aggregate pill.
+- Quadrant: dot color reflects overall status (not orange).
 
-- `BannerScreen` — full-viewport orange #E8420A block, black angled lane-stripe SVG accents, stacked headline ("VITAL INSIGHTS PRESENTS" / "HYBRID PROTOCOL" / "Built for a Champion."), bottom CTA "Tap to view your profile →". Whole surface is a `<Link to="/profile">`.
-- `ProfileHeader` — name "HARINAG S P", meta chips (163cm · 66kg · 42y · 27/11/1983) with small orange outline icons.
-- `TabBar` — two equal-width tabs (OVERVIEW / TRAIN), orange underline on active, drives the `tab` search param.
-- `QuadrantChart` — pure SVG 2x2 grid; Y axis Athleticism, X axis Strength↔Aerobic, HYBRID center label; 4 faint quadrant tints + corner labels; single orange dot at sample position with "You are here." callout; caption underneath.
-- `BenchmarkSlider` — props `{ label, eyebrow, value, unit, benchmarkLow, benchmarkHigh, min, max }`. Renders eyebrow, big orange value, horizontal track with shaded benchmark band and a vertical tick for the athlete, status text below ("Below / Within / Above HYROX athlete average") computed from value vs band.
-- `FunctionalScoreCard` — collapsible category card (Radix Collapsible / shadcn Accordion item) with sub-test rows: icon, bold name, grey one-line race correlation, right-aligned orange value.
-- `SummaryChips` — "PRIMARY STRENGTH" / "PRIMARY LIMITER" pills under functional scores.
-- `StreakBar` — sticky strip atop Train tab: 🔥 number, "DAY STREAK", motivational line, orange progress bar to next milestone (7/14/30/60).
-- `WeeklyPlanCard` — list of 7 day cards, each with day+date, color-coded session chip (orange strength / charcoal run / grey rest), 1-line focus. Tapping expands to exercise list.
-- `ExerciseRow` — name, target sets×reps, target load, small orange "Record" dot button.
-- `RecordSheet` — shadcn `Drawer` / `Sheet` with Sets stepper, Reps stepper, Weight numeric + ±2.5kg buttons, Save → marks exercise completed (checkmark, greyed row) via local state.
-- `HistoryList` — reverse-chronological compact rows (date, session type, exercises completed, total volume); expandable to show logged sets/reps/weights.
+## 3. Quadrant card — compact + insights
 
-## Data (src/data/athlete.ts)
+`QuadrantChart` shrinks and joins suggestions + injury risks in one card:
 
-Typed mocks:
-- `athlete` (name, height, weight, age, dob)
-- `quadrantPosition` (x, y in 0–1)
-- `benchmarks`: FAT% 14.2 (8–15), ALMI 7.6 (7.5–9.5), VO2 Max 46.11 (45–55)
-- `functionalScores`: Neuromuscular Power, Hybrid Strength, Isometric Power — exact sub-tests, correlations, values from the brief
-- `summary`: primary strength + limiter strings
-- `weeklyPlan`: Mon–Sun with session type, focus, exercises[]
-- `history`: a few completed sessions
-- `streak`: { days: 12, nextMilestone: 14 }
+```text
+┌─────────────────────────────────────────────┐
+│ EYEBROW: Athlete Profile                    │
+│ ┌──────────┐  SUGGESTIONS                   │
+│ │ ▓▓░░     │  • Add grip endurance block    │
+│ │ ░▓●░     │  • Z2 volume +20%              │
+│ │ ░░░░     │                                │
+│ │ Hybrid   │  INJURY RISKS                  │
+│ └──────────┘  • L/R grip asymmetry 22%      │
+│  120×120      • Knee shock absorption       │
+└─────────────────────────────────────────────┘
+```
+- Quadrant becomes a fixed 120×120 (was full-width square), labels minimized to corner glyphs.
+- On mobile (<380px) the suggestions/risks stack below; ≥380px they sit to the right in a 2-col grid.
+- New data in `athlete.ts`: `suggestions: string[]`, `injuryRisks: { label: string; severity: Status }[]`.
 
-Train tab uses `useState` for completion + logged entries (no persistence this pass; structure ready for Cloud later).
+## 4. Per-set logging (weight varies between sets)
 
-## State & interaction
+`RecordSheet` defaults to **per-set rows**. Each set is a row with reps + weight steppers:
 
-- Tab state via TanStack Router search params (`useNavigate` + `useSearch`) so it persists.
-- Expand/collapse via shadcn `Accordion` for functional scores and day cards.
-- `Sheet` for Record entry.
-- All metric components accept props so a future loader can pass real data.
+```text
+SET 1   [reps 8] [weight 60 kg]
+SET 2   [reps 8] [weight 65 kg]   ⨯
+SET 3   [reps 6] [weight 70 kg]   ⨯
+[+ Add set]   [Copy previous]
+```
+- Sheet initializes from `ex.sets` × planned reps/load.
+- Stored entry shape changes to `sets: { reps: number; weight: number }[]`.
+- History row shows volume = Σ reps×weight, and expanding shows per-set breakdown.
+- Update `LogEntry`, `HistoryEntry.logs[].sets` typing accordingly.
 
-## Out of scope (this pass)
+## 5. Other UI touch-ups
 
-- No backend / Cloud — purely client mocks with prop-driven components.
-- No auth.
-- No real charts library; QuadrantChart is hand-rolled SVG (lightweight, on-brand).
+- `TabBar`: pill background `#F2F2F7`, active pill white with soft shadow, label color `#1C1C1E`, thin orange underline dot under active label (orange's only appearance here).
+- `StreakBar`: circular ring (Apple Activity style) in orange, replacing the bar.
+- `ProfileHeader`: larger avatar circle, lighter weight name, stats as 3 inline metrics with hairline dividers between them.
+- Banner: full-bleed white → very soft top-down gradient `#FFFFFF → #F2F2F7`, centered light-weight wordmark "HYBRID PROTOCOL", small orange dot, "Tap to enter" muted.
 
-## Verification
+## 6. Files
 
-- Build passes; mobile viewport (375px) renders banner full-bleed and profile tabs without overflow (apply responsive grid pattern for the header meta row).
-- Banner tap navigates to `/profile?tab=overview`; tab switch updates URL and persists on back/forward.
-- Recording an exercise marks it completed and adds to history list in-session.
+**Edit**
+- `src/styles.css` — tokens, radius, shadows, fonts
+- `src/routes/__root.tsx` — swap font link to Inter + Inter Tight
+- `src/data/athlete.ts` — add `status` to benchmarks & functional sub-tests; add `suggestions`, `injuryRisks`; change exercise/log shape to per-set
+- `src/components/hybrid/BannerScreen.tsx`
+- `src/components/hybrid/ProfileHeader.tsx`
+- `src/components/hybrid/TabBar.tsx`
+- `src/components/hybrid/QuadrantChart.tsx` → compact + insights (rename internally or keep file; add new InsightsPanel section in same card)
+- `src/components/hybrid/BenchmarkSlider.tsx` — gradient track, status pill, status-colored value
+- `src/components/hybrid/FunctionalScores.tsx` — dots + status colors
+- `src/components/hybrid/StreakBar.tsx` — ring
+- `src/components/hybrid/TrainTab.tsx` — per-set RecordSheet + history expansion
+- `src/components/hybrid/OverviewTab.tsx` — layout/spacing
+
+**Create**
+- `src/lib/status.ts` — helper + `<StatusDot />`, `<StatusPill />`
+
+**No changes**: routing, data source wiring (still mock), shadcn primitives.
+
+## 7. Out of scope
+
+- No backend / persistence.
+- No real charts library.
+- No copy rewrite beyond what's needed for new fields.
+- Quadrant remains static-positioned from mock data.
