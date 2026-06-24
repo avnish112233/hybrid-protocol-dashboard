@@ -119,9 +119,9 @@ export const functionalScores: FunctionalCategory[] = [
   },
 ];
 
-export const summary = {
-  primaryStrength: "Strong start force off the line",
-  primaryLimiter: "Grip endurance may fail before 120m",
+export const retest = {
+  lastTested: "12 Sep 2025",
+  nextRetest: "12 Mar 2026",
 };
 
 export const weeklyPlan: DayPlan[] = [
