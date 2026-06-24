@@ -1,63 +1,43 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export function BannerScreen() {
   return (
     <Link
       to="/profile"
-      className="relative flex min-h-screen w-full flex-col justify-between overflow-hidden bg-primary text-white"
+      className="relative flex min-h-screen w-full flex-col justify-between overflow-hidden text-foreground"
+      style={{
+        background:
+          "linear-gradient(180deg, #FFFFFF 0%, #F7F7F9 55%, #F2F2F7 100%)",
+      }}
     >
-      {/* angled lane stripes */}
-      <svg
-        className="pointer-events-none absolute inset-0 h-full w-full opacity-20"
-        viewBox="0 0 400 800"
-        preserveAspectRatio="none"
-        aria-hidden
-      >
-        {Array.from({ length: 14 }).map((_, i) => (
-          <line
-            key={i}
-            x1={-200 + i * 60}
-            y1={0}
-            x2={100 + i * 60}
-            y2={800}
-            stroke="black"
-            strokeWidth="2"
-          />
-        ))}
-      </svg>
-
-      <header className="relative z-10 px-6 pt-10">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.32em]">
-          Vital Insights Presents
-        </div>
-        <div className="mt-2 h-px w-12 bg-black/70" />
+      <header className="relative z-10 flex items-center gap-2 px-6 pt-14">
+        <span className="h-2 w-2 rounded-full bg-primary" />
+        <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
+          Vital Insights
+        </span>
       </header>
 
       <div className="relative z-10 px-6">
         <h1
-          className="font-display text-[64px] uppercase leading-[0.88] tracking-tight sm:text-[88px]"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="text-[64px] leading-[0.95] tracking-[-0.04em] text-foreground sm:text-[80px]"
+          style={{ fontFamily: "var(--font-display)", fontWeight: 300 }}
         >
-          Hybrid
-          <br />
-          Protocol
+          Hybrid<br />
+          <span style={{ fontWeight: 500 }}>Protocol<span className="text-primary">.</span></span>
         </h1>
-        <p className="mt-4 max-w-xs text-base font-medium italic text-black/85">
-          Built for a Champion.
+        <p className="mt-5 max-w-xs text-base font-normal text-muted-foreground">
+          Your HYROX performance profile, recalculated as you train.
         </p>
       </div>
 
-      <footer className="relative z-10 px-6 pb-10">
-        <div className="mb-4 flex items-center gap-2">
-          <div className="h-px flex-1 bg-black/50" />
-          <div className="h-2 w-2 rotate-45 bg-black" />
-          <div className="h-px flex-1 bg-black/50" />
-        </div>
-        <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.24em]">
-          <span>HYROX · Performance</span>
-          <span className="inline-flex items-center gap-1">
-            Tap to view your profile <ChevronRight className="h-3.5 w-3.5" />
+      <footer className="relative z-10 px-6 pb-12">
+        <div className="flex items-center justify-between rounded-full bg-foreground/[0.04] px-5 py-4 backdrop-blur">
+          <span className="text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
+            Tap to enter
+          </span>
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-background">
+            <ArrowRight className="h-4 w-4" />
           </span>
         </div>
       </footer>
