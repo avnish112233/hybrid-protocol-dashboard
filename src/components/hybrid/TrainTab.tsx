@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/com
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "./Eyebrow";
 import { StreakBar } from "./StreakBar";
+import { CelebrationBurst } from "./CelebrationBurst";
 import {
   weeklyPlan,
   history as initialHistory,
@@ -44,16 +45,23 @@ export function TrainTab() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [history, setHistory] = useState<HistoryEntry[]>(initialHistory);
   const [recording, setRecording] = useState<{ day: DayPlan; ex: Exercise } | null>(null);
+  const [burst, setBurst] = useState<{ key: string; n: number } | null>(null);
+  const [dayBurst, setDayBurst] = useState<{ day: string; n: number } | null>(null);
+  const [celebratedDays, setCelebratedDays] = useState<Set<string>>(new Set());
 
   const isCompleted = (day: string, exerciseId: string) =>
     logs.some((l) => l.day === day && l.exerciseId === exerciseId);
 
+  const isDayComplete = (dayKey: string, exercises: Exercise[]) =>
+    exercises.length > 0 && exercises.every((ex) => isCompleted(dayKey, ex.id));
+
   const saveLog = (sets: SetRow[], exName: string, session: SessionType, day: string, exerciseId: string) => {
     const entry: LogEntry = { exerciseId, sets, day };
-    setLogs((prev) => [
-      ...prev.filter((l) => !(l.day === entry.day && l.exerciseId === entry.exerciseId)),
+    const nextLogs = [
+      ...logs.filter((l) => !(l.day === entry.day && l.exerciseId === entry.exerciseId)),
       entry,
-    ]);
+    ];
+    setLogs(nextLogs);
     const volume = sets.reduce((acc, s) => acc + s.reps * s.weight, 0);
     setHistory((prev) => [
       {
@@ -65,6 +73,17 @@ export function TrainTab() {
       },
       ...prev,
     ]);
+    setBurst({ key: `${day}-${exerciseId}`, n: Date.now() });
+    const dayPlan = weeklyPlan.find((d) => d.day === day);
+    if (dayPlan && dayPlan.exercises.length > 0) {
+      const allDone = dayPlan.exercises.every((ex) =>
+        nextLogs.some((l) => l.day === day && l.exerciseId === ex.id),
+      );
+      if (allDone && !celebratedDays.has(day)) {
+        setCelebratedDays((prev) => new Set(prev).add(day));
+        setDayBurst({ day, n: Date.now() });
+      }
+    }
   };
 
   return (
