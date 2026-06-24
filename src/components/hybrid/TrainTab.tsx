@@ -74,8 +74,8 @@ export function TrainTab() {
       <section>
         <Eyebrow>This Week</Eyebrow>
         <h2
-          className="mt-1 font-display text-xl uppercase tracking-tight"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="mt-1 text-xl tracking-tight text-foreground"
+          style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}
         >
           Weekly Plan
         </h2>
@@ -85,25 +85,25 @@ export function TrainTab() {
             <AccordionItem
               key={day.day}
               value={day.day}
-              className="border border-border bg-card"
+              className="overflow-hidden rounded-2xl border-0 bg-card shadow-[var(--shadow-soft)]"
             >
               <AccordionTrigger className="px-4 py-3 hover:no-underline [&>svg]:hidden">
                 <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 w-full">
                   <div className="text-left">
                     <div
-                      className="font-display text-lg leading-none"
-                      style={{ fontFamily: "var(--font-display)" }}
+                      className="text-base leading-none text-foreground"
+                      style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}
                     >
                       {day.day}
                     </div>
-                    <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    <div className="mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                       {day.date}
                     </div>
                   </div>
                   <div className="min-w-0 text-left">
                     <span
                       className={cn(
-                        "inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                        "inline-block rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
                         chipClass[day.session],
                       )}
                     >
