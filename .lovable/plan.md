@@ -1,107 +1,73 @@
-# Hybrid Protocol — Redesign & Feature Pass
+## Changes
 
-## 1. Visual overhaul — "Apple Health / Fitness"
+### 1. Default tab → Train
+- `src/routes/profile.tsx`: initial `useState<"overview" | "train">("train")`.
+- `src/routes/index.tsx` (Banner): tapping banner still routes to `/profile` (Train opens by default).
 
-Replace the industrial light theme with a softer, sleeker system.
+### 2. Profile header cleanup
+- `src/components/hybrid/ProfileHeader.tsx`: remove Height / Weight / Age / DOB stats. Keep avatar + name. Add a small subheading line beneath the name:
+  > "You are training hard and moving towards becoming better. When you become better, it is important to know yourself."
 
-**Tokens (`src/styles.css`)**
-- Background `#FFFFFF`, surface `#F2F2F7`, card `#FFFFFF`, border `#E5E5EA`
-- Foreground `#1C1C1E`, muted `#8E8E93`
-- Accent (orange) `#FF6B35` — used ONLY for: brand mark, primary CTA, streak ring, active tab indicator. Never on numeric values.
-- Status colors (semantic, used everywhere a value is judged):
-  - `--status-optimal` `#30D158` (green)
-  - `--status-normal` `#FFD60A` (amber)
-  - `--status-suboptimal` `#FF453A` (red)
-- Radii: `--radius` 16px (cards `rounded-2xl`, controls `rounded-xl`, chips `rounded-full`)
-- Shadows: very soft `0 1px 2px rgba(0,0,0,.04), 0 8px 24px -12px rgba(0,0,0,.06)` — replaces hairline borders on cards
-- Type: keep Inter for body, swap Archivo Black → **Inter Tight** (weights 300/500/700) for display. Large numerals are light-weight (300) and tabular. Drop uppercase tracking on big headings; keep tiny uppercase only on eyebrows.
+### 3. Overview tab restructure
+New order in `OverviewTab.tsx`:
+1. **Quadrant card** (full width, above suggestions)
+2. **Suggestions + Injury Risks** card (combined into one panel; remove the side-by-side compact layout in `QuadrantChart`)
+3. **Retest reminder card** (new)
+4. Benchmarks
+5. Functional scores
+6. Streak
 
-**Component sweep**
-- Remove 1px hairline borders from cards; use shadow + surface contrast.
-- Round all cards/buttons/sheets/inputs.
-- Drop the lane-stripe industrial motif on the banner; keep it minimal — large light-weight wordmark, single orange dot accent, soft gradient.
-- Eyebrows shrink to 10px uppercase, muted color, no orange.
+Remove the `summary` (Primary Strength / Primary Limiter) section entirely.
 
-## 2. Status indication system
+### 4. QuadrantChart redesign
+- Becomes full-width card, larger quadrant (e.g. 180×180) centered or left-aligned with explanation text beside.
+- Add explanatory paragraph:
+  > "This map plots you across two HYROX axes — Strength (vertical) vs. Aerobic capacity (horizontal). Your dot shows where your current profile sits relative to a pure strength, pure aerobic, or balanced hybrid athlete."
+- Remove embedded Suggestions + Injury Risks from this component (moved to its own card).
 
-New helper `src/lib/status.ts` exporting:
-```ts
-type Status = "optimal" | "normal" | "suboptimal";
-getBenchmarkStatus(value, low, high, min, max): Status
-```
-Plus a small `<StatusDot />` and `<StatusPill />` component (colored dot + label "Optimal / Normal / Suboptimal").
+### 5. New `InsightsCard` component
+- Combined card titled "Suggestions & Injury Risks".
+- Lists `insights.suggestions` (all) + `insights.injuryRisks` with status dots.
+- File: `src/components/hybrid/InsightsCard.tsx`.
 
-**Where it's applied**
-- `BenchmarkSlider`: the track itself becomes a 3-segment gradient — red (suboptimal) → amber (normal) → green (optimal) → amber → red, with the optimal band centered on `benchmarkLow..benchmarkHigh`. The numeric readout is rendered in the matching status color (no orange). A status pill sits next to the label.
-- `FunctionalScores`: each sub-test row gets a `status` field in the mock data (you can tune later) and renders a colored dot + value in status color. Category headers show an aggregate pill.
-- Quadrant: dot color reflects overall status (not orange).
+### 6. New `RetestCard` component
+- File: `src/components/hybrid/RetestCard.tsx`.
+- Shows retest date (mock) + explanation:
+  > "As you keep training, your baseline shifts: fat % drops, VO₂max climbs, muscle mass grows. Get retested to know your new numbers."
+- Three small bullets with up/down arrows: Fat % ↓, VO₂max ↑, Muscle mass ↑.
+- Data added to `athlete.ts`: `retest = { lastTested: "12 Sep 2025", nextRetest: "12 Mar 2026" }`.
 
-## 3. Quadrant card — compact + insights
+### 7. Remove Primary Strength / Primary Limiter
+- Delete `summary` usage in `OverviewTab`. Keep export in `athlete.ts` or remove — remove for cleanliness.
 
-`QuadrantChart` shrinks and joins suggestions + injury risks in one card:
+### 8. Train tab celebrations
+- `TrainTab.tsx` + `RecordSheet`:
+  - When a single exercise is marked complete (all its sets logged + "Done" tapped), trigger a confetti / burst animation over that row. Use a lightweight inline CSS animation (no new dep) — orange/green burst of dots scaling+fading via `animate-` keyframes added to `styles.css` (`celebrate-burst`).
+  - Track per-day completion state in local component state (no backend): `completedExercises: Set<string>` keyed by exercise id, per day.
+  - When all exercises for the current day are complete, the day's card header turns **green** (status optimal color) with a check icon + label "Completed". Also fires a larger celebration animation once.
+- Add keyframes in `src/styles.css`: `@keyframes celebrate-burst`, `@keyframes day-complete-glow`.
+- New small component `src/components/hybrid/CelebrationBurst.tsx` — renders 8–12 absolutely-positioned dots that animate outward then fade.
 
-```text
-┌─────────────────────────────────────────────┐
-│ EYEBROW: Athlete Profile                    │
-│ ┌──────────┐  SUGGESTIONS                   │
-│ │ ▓▓░░     │  • Add grip endurance block    │
-│ │ ░▓●░     │  • Z2 volume +20%              │
-│ │ ░░░░     │                                │
-│ │ Hybrid   │  INJURY RISKS                  │
-│ └──────────┘  • L/R grip asymmetry 22%      │
-│  120×120      • Knee shock absorption       │
-└─────────────────────────────────────────────┘
-```
-- Quadrant becomes a fixed 120×120 (was full-width square), labels minimized to corner glyphs.
-- On mobile (<380px) the suggestions/risks stack below; ≥380px they sit to the right in a 2-col grid.
-- New data in `athlete.ts`: `suggestions: string[]`, `injuryRisks: { label: string; severity: Status }[]`.
+### 9. Colors
+- Day-complete green uses existing `--status-optimal` token. No new accent colors. Orange stays brand-only.
 
-## 4. Per-set logging (weight varies between sets)
-
-`RecordSheet` defaults to **per-set rows**. Each set is a row with reps + weight steppers:
-
-```text
-SET 1   [reps 8] [weight 60 kg]
-SET 2   [reps 8] [weight 65 kg]   ⨯
-SET 3   [reps 6] [weight 70 kg]   ⨯
-[+ Add set]   [Copy previous]
-```
-- Sheet initializes from `ex.sets` × planned reps/load.
-- Stored entry shape changes to `sets: { reps: number; weight: number }[]`.
-- History row shows volume = Σ reps×weight, and expanding shows per-set breakdown.
-- Update `LogEntry`, `HistoryEntry.logs[].sets` typing accordingly.
-
-## 5. Other UI touch-ups
-
-- `TabBar`: pill background `#F2F2F7`, active pill white with soft shadow, label color `#1C1C1E`, thin orange underline dot under active label (orange's only appearance here).
-- `StreakBar`: circular ring (Apple Activity style) in orange, replacing the bar.
-- `ProfileHeader`: larger avatar circle, lighter weight name, stats as 3 inline metrics with hairline dividers between them.
-- Banner: full-bleed white → very soft top-down gradient `#FFFFFF → #F2F2F7`, centered light-weight wordmark "HYBRID PROTOCOL", small orange dot, "Tap to enter" muted.
-
-## 6. Files
+## Files
 
 **Edit**
-- `src/styles.css` — tokens, radius, shadows, fonts
-- `src/routes/__root.tsx` — swap font link to Inter + Inter Tight
-- `src/data/athlete.ts` — add `status` to benchmarks & functional sub-tests; add `suggestions`, `injuryRisks`; change exercise/log shape to per-set
-- `src/components/hybrid/BannerScreen.tsx`
-- `src/components/hybrid/ProfileHeader.tsx`
-- `src/components/hybrid/TabBar.tsx`
-- `src/components/hybrid/QuadrantChart.tsx` → compact + insights (rename internally or keep file; add new InsightsPanel section in same card)
-- `src/components/hybrid/BenchmarkSlider.tsx` — gradient track, status pill, status-colored value
-- `src/components/hybrid/FunctionalScores.tsx` — dots + status colors
-- `src/components/hybrid/StreakBar.tsx` — ring
-- `src/components/hybrid/TrainTab.tsx` — per-set RecordSheet + history expansion
-- `src/components/hybrid/OverviewTab.tsx` — layout/spacing
+- `src/routes/profile.tsx` — default tab = train
+- `src/components/hybrid/ProfileHeader.tsx` — strip stats, add subheading
+- `src/components/hybrid/OverviewTab.tsx` — new order, drop summary
+- `src/components/hybrid/QuadrantChart.tsx` — full-width + explanation, drop insights
+- `src/components/hybrid/TrainTab.tsx` — completion state + green day + celebration
+- `src/data/athlete.ts` — add `retest`, remove `summary` usage
+- `src/styles.css` — celebration keyframes
 
 **Create**
-- `src/lib/status.ts` — helper + `<StatusDot />`, `<StatusPill />`
+- `src/components/hybrid/InsightsCard.tsx`
+- `src/components/hybrid/RetestCard.tsx`
+- `src/components/hybrid/CelebrationBurst.tsx`
 
-**No changes**: routing, data source wiring (still mock), shadcn primitives.
-
-## 7. Out of scope
-
-- No backend / persistence.
-- No real charts library.
-- No copy rewrite beyond what's needed for new fields.
-- Quadrant remains static-positioned from mock data.
+## Out of scope
+- No persistence (completion resets on reload).
+- No real retest scheduling backend.
+- No copy changes beyond what's specified.
