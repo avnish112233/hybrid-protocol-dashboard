@@ -1,5 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { functionalScores, summary } from "@/data/athlete";
+import { functionalScores } from "@/data/athlete";
 import { Eyebrow } from "./Eyebrow";
 import { StatusDot, StatusPill, statusColor, type Status } from "@/lib/status";
 
@@ -56,17 +56,6 @@ export function FunctionalScores() {
           );
         })}
       </Accordion>
-
-      <div className="mt-4 grid gap-2 border-t border-border pt-4">
-        <div className="rounded-xl bg-surface p-3">
-          <Eyebrow>Primary Strength</Eyebrow>
-          <p className="mt-1 text-sm font-medium text-foreground">{summary.primaryStrength}</p>
-        </div>
-        <div className="rounded-xl bg-surface p-3">
-          <Eyebrow>Primary Limiter</Eyebrow>
-          <p className="mt-1 text-sm font-medium text-foreground">{summary.primaryLimiter}</p>
-        </div>
-      </div>
     </section>
   );
 }
