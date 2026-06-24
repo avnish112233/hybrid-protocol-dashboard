@@ -1,4 +1,5 @@
 export type SessionType = "STRENGTH A" | "STRENGTH B" | "RUN A" | "RUN B" | "HYBRID" | "REST";
+import type { Status } from "@/lib/status";
 
 export interface Exercise {
   id: string;
@@ -20,6 +21,7 @@ export interface SubTest {
   name: string;
   correlation: string;
   value: string;
+  status: Status;
 }
 
 export interface FunctionalCategory {
@@ -32,7 +34,7 @@ export interface HistoryEntry {
   session: SessionType;
   exercisesCompleted: number;
   totalVolume: number;
-  logs: { name: string; sets: number; reps: number; weight: number }[];
+  logs: { name: string; sets: { reps: number; weight: number }[] }[];
 }
 
 export const athlete = {
@@ -44,6 +46,19 @@ export const athlete = {
 };
 
 export const quadrantPosition = { x: 0.58, y: 0.68 };
+
+export const insights = {
+  suggestions: [
+    "Add a dedicated grip endurance block twice weekly",
+    "Increase Z2 aerobic volume by 20% over 4 weeks",
+    "Programme sled-push intervals to leverage start strength",
+  ],
+  injuryRisks: [
+    { label: "Grip endurance asymmetry (22% L>R)", severity: "suboptimal" as Status },
+    { label: "Knee extension shock absorption load", severity: "normal" as Status },
+    { label: "Overhead press balance (6.5% R>L)", severity: "normal" as Status },
+  ],
+};
 
 export const benchmarks = [
   {
@@ -82,24 +97,24 @@ export const functionalScores: FunctionalCategory[] = [
   {
     title: "Neuromuscular Power",
     tests: [
-      { name: "Isometric Mid Thigh Pull", correlation: "Start Strength / Sled Push", value: "161 kg" },
-      { name: "Counter Movement Jump", correlation: "Wall Ball & Burpee capacity", value: "46 W/kg" },
-      { name: "Drop Jump", correlation: "Running Economy / tendon stiffness", value: "RSI 0.62" },
+      { name: "Isometric Mid Thigh Pull", correlation: "Start Strength / Sled Push", value: "161 kg", status: "optimal" },
+      { name: "Counter Movement Jump", correlation: "Wall Ball & Burpee capacity", value: "46 W/kg", status: "optimal" },
+      { name: "Drop Jump", correlation: "Running Economy / tendon stiffness", value: "RSI 0.62", status: "normal" },
     ],
   },
   {
     title: "Hybrid Strength",
     tests: [
-      { name: "Single Leg Jump", correlation: "Sandbag Lunges", value: "L 40.4 / R 39 kg · 3.7% L>R" },
-      { name: "Isometric Lat Pull", correlation: "SkiErg Efficiency", value: "L 28 / R 27.6 kg · 1.4% L>R" },
+      { name: "Single Leg Jump", correlation: "Sandbag Lunges", value: "L 40.4 / R 39 kg · 3.7% L>R", status: "normal" },
+      { name: "Isometric Lat Pull", correlation: "SkiErg Efficiency", value: "L 28 / R 27.6 kg · 1.4% L>R", status: "optimal" },
     ],
   },
   {
     title: "Isometric Power",
     tests: [
-      { name: "Hand Grip Squeeze Endurance", correlation: "Farmer's Carry", value: "L 43.3 / R 39.4 kg · −22.9/−22%" },
-      { name: "Isometric Knee Extension", correlation: "Sandbag Lunges / shock absorption", value: "L 46.7 / R 47.5 kg" },
-      { name: "Overhead Isometric Press", correlation: "Wall Ball Efficiency", value: "L 20.4 / R 19.1 kg · 6.5% R>L" },
+      { name: "Hand Grip Squeeze Endurance", correlation: "Farmer's Carry", value: "L 43.3 / R 39.4 kg · −22.9/−22%", status: "suboptimal" },
+      { name: "Isometric Knee Extension", correlation: "Sandbag Lunges / shock absorption", value: "L 46.7 / R 47.5 kg", status: "optimal" },
+      { name: "Overhead Isometric Press", correlation: "Wall Ball Efficiency", value: "L 20.4 / R 19.1 kg · 6.5% R>L", status: "normal" },
     ],
   },
 ];
@@ -180,9 +195,15 @@ export const history: HistoryEntry[] = [
     exercisesCompleted: 3,
     totalVolume: 4280,
     logs: [
-      { name: "Weighted Pull-up", sets: 4, reps: 6, weight: 10 },
-      { name: "Farmer Carry", sets: 4, reps: 1, weight: 64 },
-      { name: "Row 500m", sets: 3, reps: 1, weight: 0 },
+      { name: "Weighted Pull-up", sets: [
+        { reps: 6, weight: 10 }, { reps: 6, weight: 12.5 }, { reps: 5, weight: 15 }, { reps: 4, weight: 15 },
+      ]},
+      { name: "Farmer Carry", sets: [
+        { reps: 1, weight: 64 }, { reps: 1, weight: 64 }, { reps: 1, weight: 68 }, { reps: 1, weight: 68 },
+      ]},
+      { name: "Row 500m", sets: [
+        { reps: 1, weight: 0 }, { reps: 1, weight: 0 }, { reps: 1, weight: 0 },
+      ]},
     ],
   },
   {
@@ -191,9 +212,9 @@ export const history: HistoryEntry[] = [
     exercisesCompleted: 3,
     totalVolume: 0,
     logs: [
-      { name: "Warmup", sets: 1, reps: 1, weight: 0 },
-      { name: "800m intervals", sets: 6, reps: 1, weight: 0 },
-      { name: "Cooldown", sets: 1, reps: 1, weight: 0 },
+      { name: "Warmup", sets: [{ reps: 1, weight: 0 }] },
+      { name: "800m intervals", sets: Array.from({ length: 6 }, () => ({ reps: 1, weight: 0 })) },
+      { name: "Cooldown", sets: [{ reps: 1, weight: 0 }] },
     ],
   },
   {
@@ -202,9 +223,13 @@ export const history: HistoryEntry[] = [
     exercisesCompleted: 3,
     totalVolume: 5120,
     logs: [
-      { name: "Trap Bar Deadlift", sets: 4, reps: 5, weight: 100 },
-      { name: "Sled Push", sets: 5, reps: 1, weight: 80 },
-      { name: "Walking Lunge", sets: 3, reps: 20, weight: 40 },
+      { name: "Trap Bar Deadlift", sets: [
+        { reps: 5, weight: 100 }, { reps: 5, weight: 110 }, { reps: 3, weight: 120 }, { reps: 3, weight: 120 },
+      ]},
+      { name: "Sled Push", sets: Array.from({ length: 5 }, () => ({ reps: 1, weight: 80 })) },
+      { name: "Walking Lunge", sets: [
+        { reps: 20, weight: 40 }, { reps: 20, weight: 40 }, { reps: 16, weight: 40 },
+      ]},
     ],
   },
 ];
