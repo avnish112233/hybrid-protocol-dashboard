@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import { ChevronLeft, Heart, MapPin, Timer, Zap, Mountain } from "lucide-react";
-import { sessions } from "@/data/sessions";
+import { sessions, type SessionDetail } from "@/data/sessions";
 import { Eyebrow } from "@/components/hybrid/Eyebrow";
 import { HrChart } from "@/components/hybrid/HrChart";
 import { ZoneBars } from "@/components/hybrid/ZoneBars";
@@ -16,7 +16,8 @@ export const Route = createFileRoute("/session/$sessionId")({
   loader: ({ params }) => {
     const s = sessions[params.sessionId];
     if (!s) throw notFound();
-    return { session: s };
+    const session: SessionDetail = s;
+    return { session };
   },
   component: SessionPage,
   notFoundComponent: () => (
