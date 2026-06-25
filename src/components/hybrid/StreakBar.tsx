@@ -9,7 +9,7 @@ export function StreakBar() {
   const offset = c * (1 - pct);
 
   return (
-    <section className="flex items-center gap-4 rounded-2xl bg-card p-5 shadow-[var(--shadow-soft)]">
+    <section className="flex items-center gap-4 rounded-2xl bg-card p-5 border border-[var(--card-border)]">
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
           <circle

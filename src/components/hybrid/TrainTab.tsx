@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Check, ChevronDown, Minus, Plus, Copy, X } from "lucide-react";
+import { Check, ChevronDown, Minus, Plus, Copy, X, ChevronRight, Watch } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
@@ -7,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Eyebrow } from "./Eyebrow";
 import { StreakBar } from "./StreakBar";
 import { CelebrationBurst } from "./CelebrationBurst";
+import { RunSessionCard } from "./RunSessionCard";
+import { NotesCard } from "./NotesCard";
 import {
   weeklyPlan,
   history as initialHistory,
@@ -48,6 +51,7 @@ export function TrainTab() {
   const [burst, setBurst] = useState<{ key: string; n: number } | null>(null);
   const [dayBurst, setDayBurst] = useState<{ day: string; n: number } | null>(null);
   const [celebratedDays, setCelebratedDays] = useState<Set<string>>(new Set());
+  const [notes, setNotes] = useState<Record<string, string>>({});
 
   const isCompleted = (day: string, exerciseId: string) =>
     logs.some((l) => l.day === day && l.exerciseId === exerciseId);
@@ -107,7 +111,7 @@ export function TrainTab() {
               key={day.day}
               value={day.day}
               className={cn(
-                "relative overflow-visible rounded-2xl border-0 bg-card shadow-[var(--shadow-soft)] transition-colors",
+                "relative overflow-visible rounded-2xl bg-card border border-[var(--card-border)] transition-colors",
                 dayDone && "bg-[color-mix(in_oklab,var(--status-optimal)_12%,var(--card))]",
                 dayBurst?.day === day.day && "animate-day-complete",
               )}
@@ -151,10 +155,15 @@ export function TrainTab() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-3">
+                {day.runData && day.sessionId && (
+                  <div className="border-t border-border pt-3">
+                    <RunSessionCard data={day.runData} sessionId={day.sessionId} />
+                  </div>
+                )}
                 {day.exercises.length === 0 ? (
                   <p className="py-2 text-xs text-muted-foreground">No exercises — recover.</p>
                 ) : (
-                  <ul className="divide-y divide-border border-t border-border">
+                  <ul className={cn("divide-y divide-border", !day.runData && "border-t border-border")}>
                     {day.exercises.map((ex) => {
                       const done = isCompleted(day.day, ex.id);
                       const exKey = `${day.day}-${ex.id}`;
@@ -171,7 +180,7 @@ export function TrainTab() {
                               <CelebrationBurst trigger={burst.n} />
                             </span>
                           )}
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <div className={cn("text-sm font-bold text-foreground", done && "line-through")}>
                               {ex.name}
                             </div>
@@ -179,6 +188,15 @@ export function TrainTab() {
                               {ex.sets} × {ex.reps} · {ex.load}
                             </div>
                           </div>
+                          {done && day.sessionId && (
+                            <Link
+                              to="/session/$sessionId"
+                              params={{ sessionId: day.sessionId }}
+                              className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                            >
+                              View
+                            </Link>
+                          )}
                           <button
                             type="button"
                             onClick={() => setRecording({ day, ex })}
@@ -198,12 +216,32 @@ export function TrainTab() {
                     })}
                   </ul>
                 )}
+                {day.exercises.length > 0 && (
+                  <NotesCard
+                    value={notes[day.day]}
+                    onSave={(n) => setNotes((prev) => ({ ...prev, [day.day]: n }))}
+                  />
+                )}
               </AccordionContent>
             </AccordionItem>
             );
           })}
         </Accordion>
       </section>
+
+      <Link
+        to="/wearables"
+        className="flex items-center justify-between rounded-2xl border border-dashed border-[var(--card-border)] bg-card px-4 py-3"
+      >
+        <span className="flex items-center gap-2.5">
+          <Watch className="h-4 w-4 text-foreground" />
+          <span>
+            <span className="block text-sm font-medium text-foreground">Connect a wearable</span>
+            <span className="block text-[11px] text-muted-foreground">Sync HR, sleep and runs automatically</span>
+          </span>
+        </span>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </Link>
 
       <HistorySection history={history} />
 
@@ -223,7 +261,7 @@ export function TrainTab() {
 
 function HistorySection({ history }: { history: HistoryEntry[] }) {
   return (
-    <section className="rounded-2xl bg-card p-5 shadow-[var(--shadow-soft)]">
+    <section className="rounded-2xl bg-card p-5 border border-[var(--card-border)]">
       <Eyebrow>Log</Eyebrow>
       <h2
         className="mt-1 text-xl tracking-tight text-foreground"

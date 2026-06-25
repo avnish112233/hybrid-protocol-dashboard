@@ -1,4 +1,4 @@
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Watch } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { retest } from "@/data/athlete";
 
@@ -8,13 +8,22 @@ export function ProfileHeader() {
       className="relative px-5 pb-6 pt-5"
       style={{ background: "var(--gradient-header)" }}
     >
-      <Link
-        to="/"
-        className="grid h-9 w-9 place-items-center rounded-full bg-card/80 text-foreground shadow-[var(--shadow-soft)] backdrop-blur"
-        aria-label="Back"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          to="/"
+          className="grid h-9 w-9 place-items-center rounded-full bg-card/80 text-foreground border border-[var(--card-border)] backdrop-blur"
+          aria-label="Back"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Link>
+        <Link
+          to="/wearables"
+          className="grid h-9 w-9 place-items-center rounded-full bg-card/80 text-foreground border border-[var(--card-border)] backdrop-blur"
+          aria-label="Wearables"
+        >
+          <Watch className="h-4 w-4" />
+        </Link>
+      </div>
       <div className="mt-3 text-center">
         <h1
           className="text-2xl leading-tight tracking-tight text-foreground"
