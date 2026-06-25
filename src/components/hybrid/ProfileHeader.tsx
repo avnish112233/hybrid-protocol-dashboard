@@ -1,31 +1,31 @@
-import { athlete } from "@/data/athlete";
+import { ChevronLeft } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { retest } from "@/data/athlete";
 
 export function ProfileHeader() {
-  const initials = athlete.name.split(" ").slice(0, 2).map((n) => n[0]).join("");
   return (
-    <header className="bg-background px-5 pb-5 pt-7">
-      <div className="flex items-center gap-4">
-        <div
-          className="grid h-14 w-14 place-items-center rounded-full bg-surface text-base font-medium text-foreground"
-          style={{ fontFamily: "var(--font-display)" }}
+    <header
+      className="relative px-5 pb-6 pt-5"
+      style={{ background: "var(--gradient-header)" }}
+    >
+      <Link
+        to="/"
+        className="grid h-9 w-9 place-items-center rounded-full bg-card/80 text-foreground shadow-[var(--shadow-soft)] backdrop-blur"
+        aria-label="Back"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Link>
+      <div className="mt-3 text-center">
+        <h1
+          className="text-2xl leading-tight tracking-tight text-foreground"
+          style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
         >
-          {initials}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
-            Athlete
-          </div>
-          <h1
-            className="mt-0.5 truncate text-xl leading-tight tracking-tight text-foreground"
-            style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}
-          >
-            {athlete.name}
-          </h1>
-        </div>
+          Hybrid Protocol
+        </h1>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Last updated on · {retest.lastTested}
+        </p>
       </div>
-      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-        Champions don't guess — they measure. Train the gaps your numbers reveal.
-      </p>
     </header>
   );
 }
