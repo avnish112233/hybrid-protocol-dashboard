@@ -10,8 +10,6 @@ export function OverviewTab() {
   return (
     <div className="space-y-4 px-5 pb-8 pt-2">
       <QuadrantChart />
-      <InsightsCard />
-      <RetestCard />
       <div>
         <Eyebrow className="mb-2 px-1">Benchmarks</Eyebrow>
         <div className="space-y-3">
@@ -21,6 +19,8 @@ export function OverviewTab() {
         </div>
       </div>
       <FunctionalScores />
+      <InsightsCard />
+      <RetestCard />
     </div>
   );
 }
