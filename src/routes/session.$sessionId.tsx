@@ -143,7 +143,7 @@ function SessionPage() {
         <section className="rounded-2xl border border-[var(--card-border)] bg-card p-4">
           <Eyebrow>Training</Eyebrow>
           <ul className="mt-2 divide-y divide-border">
-            {session.exerciseLogs.map((e) => (
+            {session.exerciseLogs.map((e: { name: string; detail: string }) => (
               <li key={e.name} className="flex items-center justify-between py-2.5">
                 <span className="text-sm font-medium text-foreground">{e.name}</span>
                 <span className="text-xs text-muted-foreground">{e.detail}</span>
