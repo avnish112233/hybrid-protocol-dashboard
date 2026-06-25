@@ -107,7 +107,7 @@ export function TrainTab() {
               key={day.day}
               value={day.day}
               className={cn(
-                "relative overflow-visible rounded-2xl border-0 bg-card shadow-[var(--shadow-soft)] transition-colors",
+                "relative overflow-visible rounded-2xl border-0 bg-card border border-[var(--card-border)] transition-colors",
                 dayDone && "bg-[color-mix(in_oklab,var(--status-optimal)_12%,var(--card))]",
                 dayBurst?.day === day.day && "animate-day-complete",
               )}
@@ -223,7 +223,7 @@ export function TrainTab() {
 
 function HistorySection({ history }: { history: HistoryEntry[] }) {
   return (
-    <section className="rounded-2xl bg-card p-5 shadow-[var(--shadow-soft)]">
+    <section className="rounded-2xl bg-card p-5 border border-[var(--card-border)]">
       <Eyebrow>Log</Eyebrow>
       <h2
         className="mt-1 text-xl tracking-tight text-foreground"

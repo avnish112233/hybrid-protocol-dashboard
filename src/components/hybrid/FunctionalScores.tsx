@@ -12,7 +12,7 @@ function aggregateStatus(statuses: Status[]): Status {
 
 export function FunctionalScores() {
   return (
-    <section className="rounded-2xl bg-card p-5 shadow-[var(--shadow-soft)]">
+    <section className="rounded-2xl bg-card p-5 border border-[var(--card-border)]">
       <Eyebrow>Lab Report</Eyebrow>
       <h2
         className="mt-1 text-xl tracking-tight text-foreground"

@@ -44,7 +44,7 @@ export function BenchmarkSlider({
     var(--status-suboptimal) 100%)`;
 
   return (
-    <section className="rounded-2xl bg-card p-5 shadow-[var(--shadow-soft)]">
+    <section className="rounded-2xl bg-card p-5 border border-[var(--card-border)]">
       <div className="flex items-start justify-between gap-2">
         <div>
           <Eyebrow>{eyebrow}</Eyebrow>

@@ -10,7 +10,7 @@ export function ProfileHeader() {
     >
       <Link
         to="/"
-        className="grid h-9 w-9 place-items-center rounded-full bg-card/80 text-foreground shadow-[var(--shadow-soft)] backdrop-blur"
+        className="grid h-9 w-9 place-items-center rounded-full bg-card/80 text-foreground border border-[var(--card-border)] backdrop-blur"
         aria-label="Back"
       >
         <ChevronLeft className="h-4 w-4" />

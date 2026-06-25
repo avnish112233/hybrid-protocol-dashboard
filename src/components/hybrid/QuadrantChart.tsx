@@ -32,7 +32,7 @@ function Quadrant() {
 
 export function QuadrantChart() {
   return (
-    <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-[var(--shadow-soft)]">
+    <section className="rounded-2xl border border-border/60 bg-card p-4 border border-[var(--card-border)]">
       <h2 className="text-xs font-medium text-foreground">Athlete profile</h2>
       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
         Your position on the HYROX map — overall capacity vs. strength/aerobic mix.
