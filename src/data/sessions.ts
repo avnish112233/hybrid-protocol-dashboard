@@ -164,8 +164,7 @@ export const sessions: Record<string, SessionDetail> = {
       quads: "high",
       abs: "med",
       chest: "med",
-      triceps: "med" as MuscleEffort,
-    } as Partial<Record<MuscleGroup, MuscleEffort>>,
+    },
     exerciseLogs: [
       { name: "SkiErg 500m", detail: "5 × 1" },
       { name: "Wall Ball", detail: "5 × 20 @ 9 kg" },
