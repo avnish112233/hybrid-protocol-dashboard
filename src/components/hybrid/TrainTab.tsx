@@ -155,10 +155,15 @@ export function TrainTab() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-3">
+                {day.runData && day.sessionId && (
+                  <div className="border-t border-border pt-3">
+                    <RunSessionCard data={day.runData} sessionId={day.sessionId} />
+                  </div>
+                )}
                 {day.exercises.length === 0 ? (
                   <p className="py-2 text-xs text-muted-foreground">No exercises — recover.</p>
                 ) : (
-                  <ul className="divide-y divide-border border-t border-border">
+                  <ul className={cn("divide-y divide-border", !day.runData && "border-t border-border")}>
                     {day.exercises.map((ex) => {
                       const done = isCompleted(day.day, ex.id);
                       const exKey = `${day.day}-${ex.id}`;
@@ -175,7 +180,7 @@ export function TrainTab() {
                               <CelebrationBurst trigger={burst.n} />
                             </span>
                           )}
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <div className={cn("text-sm font-bold text-foreground", done && "line-through")}>
                               {ex.name}
                             </div>
@@ -183,6 +188,15 @@ export function TrainTab() {
                               {ex.sets} × {ex.reps} · {ex.load}
                             </div>
                           </div>
+                          {done && day.sessionId && (
+                            <Link
+                              to="/session/$sessionId"
+                              params={{ sessionId: day.sessionId }}
+                              className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                            >
+                              View
+                            </Link>
+                          )}
                           <button
                             type="button"
                             onClick={() => setRecording({ day, ex })}
@@ -202,12 +216,32 @@ export function TrainTab() {
                     })}
                   </ul>
                 )}
+                {day.exercises.length > 0 && (
+                  <NotesCard
+                    value={notes[day.day]}
+                    onSave={(n) => setNotes((prev) => ({ ...prev, [day.day]: n }))}
+                  />
+                )}
               </AccordionContent>
             </AccordionItem>
             );
           })}
         </Accordion>
       </section>
+
+      <Link
+        to="/wearables"
+        className="flex items-center justify-between rounded-2xl border border-dashed border-[var(--card-border)] bg-card px-4 py-3"
+      >
+        <span className="flex items-center gap-2.5">
+          <Watch className="h-4 w-4 text-foreground" />
+          <span>
+            <span className="block text-sm font-medium text-foreground">Connect a wearable</span>
+            <span className="block text-[11px] text-muted-foreground">Sync HR, sleep and runs automatically</span>
+          </span>
+        </span>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </Link>
 
       <HistorySection history={history} />
 
