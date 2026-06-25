@@ -24,8 +24,7 @@ export function ProfileHeader() {
         </div>
       </div>
       <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-        You are training hard and moving towards becoming better. When you become better,
-        it is important to know yourself.
+        Champions don't guess — they measure. Train the gaps your numbers reveal.
       </p>
     </header>
   );

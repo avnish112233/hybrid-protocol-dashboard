@@ -1,73 +1,84 @@
-## Changes
+## 1. Remove remaining orange/status dots (Overview + Train)
 
-### 1. Default tab → Train
-- `src/routes/profile.tsx`: initial `useState<"overview" | "train">("train")`.
-- `src/routes/index.tsx` (Banner): tapping banner still routes to `/profile` (Train opens by default).
+The earlier pass dropped `StatusDot` from `OverviewTab`/`TrainTab` shells, but two still render visually on those tabs:
 
-### 2. Profile header cleanup
-- `src/components/hybrid/ProfileHeader.tsx`: remove Height / Weight / Age / DOB stats. Keep avatar + name. Add a small subheading line beneath the name:
-  > "You are training hard and moving towards becoming better. When you become better, it is important to know yourself."
+- `InsightsCard` → injury-risk list (`StatusDot` per row). Replace dot with a plain bullet (`•`) so the row carries only text.
+- `FunctionalScores` → per-test `StatusDot` (a yellow/orange dot for "normal"/"suboptimal" tests). Remove the dot; status will continue to be conveyed by the value color and the aggregate `StatusPill` on each category header, plus the new asymmetry slider (see §5).
 
-### 3. Overview tab restructure
+No other changes to status semantics.
+
+## 2. Typography: Blinker (headings) + Instrument Sans (body)
+
+- `src/routes/__root.tsx`: replace the Inter/Inter Tight Google Fonts `<link>` with one for `Blinker` (400/500/600/700) and `Instrument Sans` (400/500/600).
+- `src/styles.css`:
+  - `--font-sans: "Instrument Sans", system-ui, sans-serif;`
+  - `--font-display: "Blinker", "Instrument Sans", system-ui, sans-serif;`
+- Headings already use `var(--font-display)` via inline style. Body inherits `--font-sans` via Tailwind's `font-sans` default — no per-component changes needed. The few `Eyebrow`/uppercase labels keep their current sizing.
+
+## 3. Header subheading copy
+
+`src/components/hybrid/ProfileHeader.tsx` — replace the current sentence with a HYROX-flavoured line:
+
+> "Champions don't guess — they measure. Train the gaps your numbers reveal."
+
+## 4. Overview tab restructure
+
 New order in `OverviewTab.tsx`:
-1. **Quadrant card** (full width, above suggestions)
-2. **Suggestions + Injury Risks** card (combined into one panel; remove the side-by-side compact layout in `QuadrantChart`)
-3. **Retest reminder card** (new)
-4. Benchmarks
-5. Functional scores
-6. Streak
 
-Remove the `summary` (Primary Strength / Primary Limiter) section entirely.
+1. **Athlete profile** (compact `QuadrantChart`) — see redesign below
+2. **Benchmarks** (VI test data: Fat %, ALMI, VO₂ max)
+3. **Functional Scores** (with new asymmetry sliders — §5)
+4. **Insights** (testing suggestions only; injury risks moved into the quadrant card)
+5. **Retest Reminder**
 
-### 4. QuadrantChart redesign
-- Becomes full-width card, larger quadrant (e.g. 180×180) centered or left-aligned with explanation text beside.
-- Add explanatory paragraph:
-  > "This map plots you across two HYROX axes — Strength (vertical) vs. Aerobic capacity (horizontal). Your dot shows where your current profile sits relative to a pure strength, pure aerobic, or balanced hybrid athlete."
-- Remove embedded Suggestions + Injury Risks from this component (moved to its own card).
+### QuadrantChart redesign
 
-### 5. New `InsightsCard` component
-- Combined card titled "Suggestions & Injury Risks".
-- Lists `insights.suggestions` (all) + `insights.injuryRisks` with status dots.
-- File: `src/components/hybrid/InsightsCard.tsx`.
+- Eyebrow stays "Athlete Profile" but rendered at **12px** (`text-xs`), not the current 10px uppercase tracking.
+- Drop the H2 "Hybrid · Aerobic-leaning" line and shrink the explanatory copy to one short sentence: *"Your position on the HYROX map — overall capacity vs. strength/aerobic mix."*
+- Axes relabel:
+  - **Y axis** = "Athlete level" (low → high; bottom = developing, top = elite)
+  - **X axis** = "Strength ← → Aerobic"
+  - Update the four corner labels accordingly (remove Power/Endurance corners; keep just the two axis end labels).
+- Below the matrix, inline an **Injury risk** mini-section: small eyebrow "Injury risk" + bulleted pointers from `insights.injuryRisks` (label only, no status dot, no severity pill — pointers, as requested).
 
-### 6. New `RetestCard` component
-- File: `src/components/hybrid/RetestCard.tsx`.
-- Shows retest date (mock) + explanation:
-  > "As you keep training, your baseline shifts: fat % drops, VO₂max climbs, muscle mass grows. Get retested to know your new numbers."
-- Three small bullets with up/down arrows: Fat % ↓, VO₂max ↑, Muscle mass ↑.
-- Data added to `athlete.ts`: `retest = { lastTested: "12 Sep 2025", nextRetest: "12 Mar 2026" }`.
+### InsightsCard
 
-### 7. Remove Primary Strength / Primary Limiter
-- Delete `summary` usage in `OverviewTab`. Keep export in `athlete.ts` or remove — remove for cleanliness.
+- Remove the "Injury Risks" block (now lives under the quadrant).
+- Rename heading to **"Testing Suggestions"**; keep the suggestion list as plain bullets.
 
-### 8. Train tab celebrations
-- `TrainTab.tsx` + `RecordSheet`:
-  - When a single exercise is marked complete (all its sets logged + "Done" tapped), trigger a confetti / burst animation over that row. Use a lightweight inline CSS animation (no new dep) — orange/green burst of dots scaling+fading via `animate-` keyframes added to `styles.css` (`celebrate-burst`).
-  - Track per-day completion state in local component state (no backend): `completedExercises: Set<string>` keyed by exercise id, per day.
-  - When all exercises for the current day are complete, the day's card header turns **green** (status optimal color) with a check icon + label "Completed". Also fires a larger celebration animation once.
-- Add keyframes in `src/styles.css`: `@keyframes celebrate-burst`, `@keyframes day-complete-glow`.
-- New small component `src/components/hybrid/CelebrationBurst.tsx` — renders 8–12 absolutely-positioned dots that animate outward then fade.
+## 5. Asymmetry slider in Functional Scores
 
-### 9. Colors
-- Day-complete green uses existing `--status-optimal` token. No new accent colors. Orange stays brand-only.
+A new presentational component `src/components/hybrid/AsymmetrySlider.tsx`:
+
+- Input: `percent: number` (absolute asymmetry %).
+- Track: gradient with three zones — `0–10%` optimal (green), `10–18%` normal (amber), `18%+` suboptimal (red). Visual scale capped at 25%.
+- Thumb at `min(percent, 25)` with the numeric `±X%` rendered to its right.
+- Tiny axis labels: `0%`, `10`, `18`, `25%+`.
+
+Wire-up in `src/components/hybrid/FunctionalScores.tsx`:
+
+- For each `SubTest`, parse asymmetry from `value` when present (regex on patterns like `3.7% L>R`, `−22.9/−22%`, `6.5% R>L`; take the absolute first percentage that appears with a directional token). If no asymmetry is detected (e.g. `IMTP 161 kg`, `CMJ 46 W/kg`), don't render the slider.
+- Render the slider beneath the existing test row, full-width, replacing the per-test `StatusDot`. The slider's own zone color is the visual status indicator now.
+- Derive `status` from the parsed percent (`<10 optimal`, `<18 normal`, else `suboptimal`) instead of the hard-coded `status` field for tests that have asymmetry. Non-asymmetry tests keep their existing `status` for the aggregate pill.
+
+No data shape changes in `athlete.ts` — values stay strings; parsing is in the component.
 
 ## Files
 
 **Edit**
-- `src/routes/profile.tsx` — default tab = train
-- `src/components/hybrid/ProfileHeader.tsx` — strip stats, add subheading
-- `src/components/hybrid/OverviewTab.tsx` — new order, drop summary
-- `src/components/hybrid/QuadrantChart.tsx` — full-width + explanation, drop insights
-- `src/components/hybrid/TrainTab.tsx` — completion state + green day + celebration
-- `src/data/athlete.ts` — add `retest`, remove `summary` usage
-- `src/styles.css` — celebration keyframes
+- `src/routes/__root.tsx` — Google Fonts link → Blinker + Instrument Sans
+- `src/styles.css` — `--font-sans`, `--font-display`
+- `src/components/hybrid/ProfileHeader.tsx` — new subheading copy
+- `src/components/hybrid/OverviewTab.tsx` — new section order
+- `src/components/hybrid/QuadrantChart.tsx` — smaller header, new axes, injury-risk pointers inline
+- `src/components/hybrid/InsightsCard.tsx` — drop injury risks, rename, keep suggestions
+- `src/components/hybrid/FunctionalScores.tsx` — drop `StatusDot`, render `AsymmetrySlider` when applicable
+- `src/components/hybrid/TrainTab.tsx` — (no functional change; only here if a stray status dot remains after audit)
 
 **Create**
-- `src/components/hybrid/InsightsCard.tsx`
-- `src/components/hybrid/RetestCard.tsx`
-- `src/components/hybrid/CelebrationBurst.tsx`
+- `src/components/hybrid/AsymmetrySlider.tsx`
 
 ## Out of scope
-- No persistence (completion resets on reload).
-- No real retest scheduling backend.
-- No copy changes beyond what's specified.
+- No changes to Train tab structure, celebration, or History.
+- No changes to data in `athlete.ts`.
+- No new color tokens; reuse `--status-optimal/normal/suboptimal`.
