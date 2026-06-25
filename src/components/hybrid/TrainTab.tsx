@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Check, ChevronDown, Minus, Plus, Copy, X } from "lucide-react";
+import { Check, ChevronDown, Minus, Plus, Copy, X, ChevronRight, Watch } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
@@ -7,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Eyebrow } from "./Eyebrow";
 import { StreakBar } from "./StreakBar";
 import { CelebrationBurst } from "./CelebrationBurst";
+import { RunSessionCard } from "./RunSessionCard";
+import { NotesCard } from "./NotesCard";
 import {
   weeklyPlan,
   history as initialHistory,
@@ -48,6 +51,7 @@ export function TrainTab() {
   const [burst, setBurst] = useState<{ key: string; n: number } | null>(null);
   const [dayBurst, setDayBurst] = useState<{ day: string; n: number } | null>(null);
   const [celebratedDays, setCelebratedDays] = useState<Set<string>>(new Set());
+  const [notes, setNotes] = useState<Record<string, string>>({});
 
   const isCompleted = (day: string, exerciseId: string) =>
     logs.some((l) => l.day === day && l.exerciseId === exerciseId);
@@ -107,7 +111,7 @@ export function TrainTab() {
               key={day.day}
               value={day.day}
               className={cn(
-                "relative overflow-visible rounded-2xl border-0 bg-card border border-[var(--card-border)] transition-colors",
+                "relative overflow-visible rounded-2xl bg-card border border-[var(--card-border)] transition-colors",
                 dayDone && "bg-[color-mix(in_oklab,var(--status-optimal)_12%,var(--card))]",
                 dayBurst?.day === day.day && "animate-day-complete",
               )}
