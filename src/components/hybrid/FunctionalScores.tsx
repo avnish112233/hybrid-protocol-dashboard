@@ -1,7 +1,8 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { functionalScores } from "@/data/athlete";
 import { Eyebrow } from "./Eyebrow";
-import { StatusDot, StatusPill, statusColor, type Status } from "@/lib/status";
+import { StatusPill, statusColor, type Status } from "@/lib/status";
+import { AsymmetrySlider, asymmetryStatus, parseAsymmetry } from "./AsymmetrySlider";
 
 function aggregateStatus(statuses: Status[]): Status {
   if (statuses.some((s) => s === "suboptimal")) return "suboptimal";
@@ -33,23 +34,27 @@ export function FunctionalScores() {
               </AccordionTrigger>
               <AccordionContent className="pb-3">
                 <ul className="divide-y divide-border">
-                  {cat.tests.map((t) => (
-                    <li key={t.name} className="flex items-start justify-between gap-3 py-3">
-                      <div className="flex min-w-0 items-start gap-2.5">
-                        <StatusDot status={t.status} className="mt-1.5" />
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium text-foreground">{t.name}</div>
-                          <div className="mt-0.5 text-xs text-muted-foreground">{t.correlation}</div>
+                  {cat.tests.map((t) => {
+                    const asym = parseAsymmetry(t.value);
+                    const effective: Status = asym !== null ? asymmetryStatus(asym) : t.status;
+                    return (
+                      <li key={t.name} className="py-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-foreground">{t.name}</div>
+                            <div className="mt-0.5 text-xs text-muted-foreground">{t.correlation}</div>
+                          </div>
+                          <div
+                            className="shrink-0 text-right text-sm font-medium tabular-nums"
+                            style={{ color: statusColor[effective] }}
+                          >
+                            {t.value}
+                          </div>
                         </div>
-                      </div>
-                      <div
-                        className="shrink-0 text-right text-sm font-medium tabular-nums"
-                        style={{ color: statusColor[t.status] }}
-                      >
-                        {t.value}
-                      </div>
-                    </li>
-                  ))}
+                        {asym !== null && <AsymmetrySlider percent={asym} />}
+                      </li>
+                    );
+                  })}
                 </ul>
               </AccordionContent>
             </AccordionItem>
