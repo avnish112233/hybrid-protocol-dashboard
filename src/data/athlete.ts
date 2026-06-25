@@ -15,6 +15,8 @@ export interface DayPlan {
   session: SessionType;
   focus: string;
   exercises: Exercise[];
+  sessionId?: string;
+  runData?: RunData;
 }
 
 export interface SubTest {
@@ -35,6 +37,19 @@ export interface HistoryEntry {
   exercisesCompleted: number;
   totalVolume: number;
   logs: { name: string; sets: { reps: number; weight: number }[] }[];
+  notes?: string;
+  sessionId?: string;
+}
+
+export interface RunData {
+  source: "Strava";
+  distanceKm: number;
+  durationMin: number;
+  avgPaceLabel: string; // e.g. "5:12 /km"
+  avgHr: number;
+  maxHr: number;
+  elevationM: number;
+  calories: number;
 }
 
 export const athlete = {
