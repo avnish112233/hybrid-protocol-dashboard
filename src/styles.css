@@ -95,6 +95,9 @@
   --status-suboptimal: oklch(0.65 0.22 25);
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -12px rgba(0, 0, 0, 0.08);
   --shadow-sheet: 0 -8px 32px -12px rgba(0, 0, 0, 0.12);
+  --gradient-header: linear-gradient(180deg, oklch(0.96 0.03 150 / 0.55) 0%, oklch(1 0 0) 100%);
+  --accent-orange-soft: oklch(0.96 0.05 40);
+  --accent-green-soft: oklch(0.96 0.05 150);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);

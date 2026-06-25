@@ -8,8 +8,8 @@ export function TabBar({ value, onChange }: { value: Tab; onChange: (t: Tab) => 
     { id: "train", label: "Train" },
   ];
   return (
-    <div className="sticky top-0 z-20 bg-background/85 px-5 py-3 backdrop-blur-md">
-      <div className="grid grid-cols-2 gap-1 rounded-full bg-surface p-1">
+    <div className="sticky top-0 z-20 bg-background/90 px-5 py-3 backdrop-blur-md">
+      <div className="mx-auto grid max-w-[320px] grid-cols-2 gap-1 rounded-full bg-surface p-1">
         {tabs.map((t) => {
           const active = t.id === value;
           return (
@@ -25,9 +25,6 @@ export function TabBar({ value, onChange }: { value: Tab; onChange: (t: Tab) => 
               )}
             >
               {t.label}
-              {active && (
-                <span className="absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary" />
-              )}
             </button>
           );
         })}

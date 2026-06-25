@@ -1,4 +1,5 @@
 import { Eyebrow } from "./Eyebrow";
+import { AccentCallout } from "./AccentCallout";
 import { quadrantPosition, insights } from "@/data/athlete";
 
 function Quadrant() {
@@ -31,16 +32,26 @@ function Quadrant() {
 
 export function QuadrantChart() {
   return (
-    <section className="rounded-2xl bg-card p-5 shadow-[var(--shadow-soft)]">
+    <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-[var(--shadow-soft)]">
       <h2 className="text-xs font-medium text-foreground">Athlete profile</h2>
       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
         Your position on the HYROX map — overall capacity vs. strength/aerobic mix.
       </p>
-      <div className="mt-4">
+      <div className="mt-4 rounded-xl border border-border/60 bg-card p-3">
         <Quadrant />
       </div>
 
-      <div className="mt-5 border-t border-border pt-4">
+      <AccentCallout tone="orange" className="mt-4">
+        <div className="text-[13px] font-semibold text-foreground">
+          What this means for you
+        </div>
+        <p className="mt-1 text-[13px] leading-relaxed text-foreground/85">
+          You sit in the upper-aerobic half of the map. Your engine is ahead of your
+          raw strength — translate that capacity into stronger sled and carry work.
+        </p>
+      </AccentCallout>
+
+      <div className="mt-4">
         <Eyebrow>Injury risk</Eyebrow>
         <ul className="mt-2 space-y-1.5">
           {insights.injuryRisks.map((r) => (

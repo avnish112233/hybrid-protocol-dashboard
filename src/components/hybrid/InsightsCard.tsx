@@ -1,25 +1,25 @@
-import { Eyebrow } from "./Eyebrow";
+import { AccentCallout } from "./AccentCallout";
 import { insights } from "@/data/athlete";
 
 export function InsightsCard() {
   return (
-    <section className="rounded-2xl bg-card p-5 shadow-[var(--shadow-soft)]">
-      <Eyebrow>Coaching</Eyebrow>
-      <h2
-        className="mt-1 text-lg tracking-tight text-foreground"
-        style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}
-      >
-        Testing Suggestions
+    <section>
+      <h2 className="mb-2 px-1 text-sm font-semibold text-foreground">
+        Recommended Testing
       </h2>
-
-      <ul className="mt-4 space-y-1.5">
-        {insights.suggestions.map((s) => (
-          <li key={s} className="flex gap-2 text-sm text-foreground">
-            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
-            <span className="leading-snug">{s}</span>
-          </li>
-        ))}
-      </ul>
+      <AccentCallout tone="green">
+        <ul className="space-y-2">
+          {insights.suggestions.map((s) => (
+            <li key={s} className="flex gap-2 text-[13px] leading-snug text-foreground">
+              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foreground/60" />
+              <span>{s}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 border-t border-foreground/10 pt-3 text-[12px] italic leading-relaxed text-muted-foreground">
+          Champions don't guess — they measure. Train the gaps your numbers reveal.
+        </p>
+      </AccentCallout>
     </section>
   );
 }
