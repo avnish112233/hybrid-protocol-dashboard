@@ -145,6 +145,7 @@ export const weeklyPlan: DayPlan[] = [
     date: "24 Nov",
     session: "STRENGTH A",
     focus: "Lower body power + sled work",
+    sessionId: "mon-strength-a",
     exercises: [
       { id: "m1", name: "Trap Bar Deadlift", sets: 4, reps: "5", load: "100 kg" },
       { id: "m2", name: "Sled Push 20m", sets: 5, reps: "1", load: "80 kg" },
@@ -156,6 +157,17 @@ export const weeklyPlan: DayPlan[] = [
     date: "25 Nov",
     session: "RUN A",
     focus: "Threshold intervals 6×800m",
+    sessionId: "tue-run-a",
+    runData: {
+      source: "Strava",
+      distanceKm: 8.4,
+      durationMin: 42,
+      avgPaceLabel: "5:00 /km",
+      avgHr: 162,
+      maxHr: 181,
+      elevationM: 38,
+      calories: 612,
+    },
     exercises: [
       { id: "t1", name: "Easy warmup", sets: 1, reps: "10min", load: "—" },
       { id: "t2", name: "800m @ threshold", sets: 6, reps: "1", load: "—" },
@@ -167,6 +179,7 @@ export const weeklyPlan: DayPlan[] = [
     date: "26 Nov",
     session: "HYBRID",
     focus: "SkiErg + wall ball couplet",
+    sessionId: "wed-hybrid",
     exercises: [
       { id: "w1", name: "SkiErg 500m", sets: 5, reps: "1", load: "—" },
       { id: "w2", name: "Wall Ball", sets: 5, reps: "20", load: "9 kg" },
@@ -177,6 +190,7 @@ export const weeklyPlan: DayPlan[] = [
     date: "27 Nov",
     session: "STRENGTH B",
     focus: "Upper pull + grip endurance",
+    sessionId: "thu-strength-b",
     exercises: [
       { id: "th1", name: "Weighted Pull-up", sets: 4, reps: "6", load: "+10 kg" },
       { id: "th2", name: "Farmer Carry 40m", sets: 4, reps: "1", load: "2×32 kg" },
@@ -188,6 +202,17 @@ export const weeklyPlan: DayPlan[] = [
     date: "28 Nov",
     session: "RUN B",
     focus: "Long aerobic 60min Z2",
+    sessionId: "fri-run-b",
+    runData: {
+      source: "Strava",
+      distanceKm: 12.1,
+      durationMin: 64,
+      avgPaceLabel: "5:17 /km",
+      avgHr: 148,
+      maxHr: 165,
+      elevationM: 72,
+      calories: 890,
+    },
     exercises: [{ id: "f1", name: "Z2 Run", sets: 1, reps: "60min", load: "—" }],
   },
   {
@@ -195,6 +220,7 @@ export const weeklyPlan: DayPlan[] = [
     date: "29 Nov",
     session: "HYBRID",
     focus: "Race simulation — 4 stations",
+    sessionId: "sat-hybrid",
     exercises: [
       { id: "s1", name: "Run 1km", sets: 4, reps: "1", load: "—" },
       { id: "s2", name: "Burpee Broad Jump", sets: 4, reps: "20", load: "—" },
