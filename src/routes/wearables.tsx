@@ -14,6 +14,7 @@ import {
   Waves,
 } from "lucide-react";
 import { Eyebrow } from "@/components/hybrid/Eyebrow";
+import { useWhoopData } from "@/hooks/useWhoopData";
 
 export const Route = createFileRoute("/wearables")({
   head: () => ({
@@ -47,6 +48,7 @@ export const Route = createFileRoute("/wearables")({
 
 function WearablesPage() {
   const [toast, setToast] = useState<string | null>(null);
+  const { data: whoop, isLoading: whoopLoading, error: whoopError } = useWhoopData();
 
   const watches = [
     { name: "Apple Watch", icon: Apple, connected: false },
@@ -60,6 +62,15 @@ function WearablesPage() {
     setToast(`${name} — coming soon`);
     setTimeout(() => setToast(null), 1800);
   };
+
+  const recoveryColor =
+    whoop?.recoveryScore != null
+      ? whoop.recoveryScore >= 67
+        ? "var(--status-optimal)"
+        : whoop.recoveryScore >= 34
+          ? "var(--primary)"
+          : "var(--status-suboptimal)"
+      : "var(--muted-foreground)";
 
   return (
     <main className="min-h-screen bg-background pb-16">
@@ -109,6 +120,126 @@ function WearablesPage() {
           Supported smartwatches include Apple Watch, Garmin, Coros, Fitbit and Amazefit.
         </p>
       </section>
+
+      {/* Whoop live tile — shown when VITE_OW_USER_ID is set */}
+      {(whoopLoading || whoop || whoopError) && (
+        <section className="mt-6 px-5">
+          <div className="flex items-center justify-between mb-2">
+            <Eyebrow className="px-1">Whoop</Eyebrow>
+            <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--status-optimal)_18%,transparent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--status-optimal)]">
+              Connected
+            </span>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--card-border)] bg-card p-4 space-y-4">
+            {whoopLoading && (
+              <p className="text-sm text-muted-foreground">Loading live data…</p>
+            )}
+
+            {whoopError && (
+              <p className="text-sm text-muted-foreground">
+                Could not load Whoop data — {(whoopError as Error).message}
+              </p>
+            )}
+
+            {whoop && (
+              <>
+                {/* Recovery + vitals */}
+                <div className="grid grid-cols-3 gap-3">
+                  <Metric
+                    label="Recovery"
+                    value={whoop.recoveryScore != null ? `${whoop.recoveryScore}%` : "—"}
+                    valueColor={recoveryColor}
+                  />
+                  <Metric
+                    label="HRV"
+                    value={whoop.hrv != null ? `${Math.round(whoop.hrv)}` : "—"}
+                    unit={whoop.hrv != null ? "ms" : undefined}
+                  />
+                  <Metric
+                    label="Resting HR"
+                    value={whoop.restingHR != null ? `${Math.round(whoop.restingHR)}` : "—"}
+                    unit={whoop.restingHR != null ? "bpm" : undefined}
+                  />
+                </div>
+
+                {/* 30-day context */}
+                <div
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl px-3 py-2 text-xs"
+                  style={{ backgroundColor: "var(--surface)" }}
+                >
+                  <span className="text-muted-foreground">30d avg</span>
+                  <span className="text-foreground">
+                    Recovery <strong>{whoop.avgRecovery30d ?? "—"}%</strong>
+                  </span>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="text-foreground">
+                    Sleep <strong>{whoop.avgSleepH ?? "—"}h</strong>
+                  </span>
+                  {whoop.spo2 != null && (
+                    <>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="text-foreground">
+                        SpO₂ <strong>{whoop.spo2.toFixed(1)}%</strong>
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                {/* Last sleep */}
+                {whoop.lastSleep && (
+                  <div className="border-t pt-3" style={{ borderColor: "var(--card-border)" }}>
+                    <Eyebrow className="mb-2">Last Sleep</Eyebrow>
+                    <div className="grid grid-cols-4 gap-2">
+                      <Metric label="Duration" value={`${whoop.lastSleep.durationH}h`} />
+                      <Metric
+                        label="Efficiency"
+                        value={whoop.lastSleep.efficiency != null ? `${whoop.lastSleep.efficiency}%` : "—"}
+                      />
+                      <Metric
+                        label="Deep"
+                        value={whoop.lastSleep.deep != null ? `${whoop.lastSleep.deep}m` : "—"}
+                      />
+                      <Metric
+                        label="REM"
+                        value={whoop.lastSleep.rem != null ? `${whoop.lastSleep.rem}m` : "—"}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent workouts */}
+                {whoop.recentWorkouts.length > 0 && (
+                  <div className="border-t pt-3" style={{ borderColor: "var(--card-border)" }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <Eyebrow>Recent Workouts</Eyebrow>
+                      <span className="text-[10px] text-muted-foreground">
+                        {whoop.totalWorkouts90d} in 90d
+                      </span>
+                    </div>
+                    <ul className="divide-y" style={{ borderColor: "var(--card-border)" }}>
+                      {whoop.recentWorkouts.map((w, i) => (
+                        <li key={i} className="flex items-center justify-between py-2 text-xs">
+                          <span className="flex items-center gap-2">
+                            <WorkoutBadge type={w.type} />
+                            <span className="text-muted-foreground">{w.date}</span>
+                          </span>
+                          <span className="tabular-nums text-foreground">
+                            {w.durationMin}m
+                            {w.avgHR != null && (
+                              <span className="ml-2 text-muted-foreground">· {w.avgHR} bpm avg</span>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="mt-6 px-5">
         <Eyebrow className="mb-2 px-1">Watches</Eyebrow>
@@ -173,6 +304,53 @@ function WearablesPage() {
         </div>
       )}
     </main>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  unit,
+  valueColor,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  valueColor?: string;
+}) {
+  return (
+    <div>
+      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
+      <div
+        className="mt-0.5 text-lg tabular-nums text-foreground"
+        style={{ fontFamily: "var(--font-display)", fontWeight: 500, color: valueColor }}
+      >
+        {value}
+        {unit && <span className="ml-0.5 text-xs text-muted-foreground">{unit}</span>}
+      </div>
+    </div>
+  );
+}
+
+function WorkoutBadge({ type }: { type: string }) {
+  const colors: Record<string, { bg: string; color: string }> = {
+    running: { bg: "#F2F5FB", color: "#2A4A9B" },
+    tennis: { bg: "#F5FBF2", color: "#2A7A3B" },
+    strength: { bg: "#FBF2F2", color: "#9B2A2A" },
+    cycling: { bg: "#FBF8F2", color: "#9B7A2A" },
+    swimming: { bg: "#F2F8FB", color: "#2A7A9B" },
+    generic: { bg: "#F5F5F5", color: "#555555" },
+  };
+  const cfg = colors[type] ?? colors.generic;
+  return (
+    <span
+      className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium capitalize"
+      style={cfg}
+    >
+      {type.replace("_", " ")}
+    </span>
   );
 }
 
