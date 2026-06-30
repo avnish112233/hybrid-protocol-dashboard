@@ -1,6 +1,6 @@
 import { Watch } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { retest } from "@/data/athlete";
+import { athlete, retest } from "@/data/athlete";
 
 /**
  * HYROX-flavored industrial banner — yellow + black with diagonal chevrons.
@@ -39,14 +39,16 @@ export function ProfileHeader() {
             Vital Insights
           </div>
           <h1
-            className="mt-1 text-3xl uppercase leading-[0.95] tracking-[-0.02em]"
+            className="mt-1 uppercase leading-[0.95] tracking-[-0.02em]"
             style={{
               fontFamily: "var(--font-display)",
               fontWeight: 800,
               color: "var(--hyrox-yellow)",
+              fontSize: athlete.name.length > 12 ? "1.75rem" : "1.875rem",
+              maxWidth: "12ch",
             }}
           >
-            Hybrid<br />Protocol<span style={{ color: "var(--hyrox-yellow)" }}>.</span>
+            {athlete.name}<span style={{ color: "var(--hyrox-yellow)" }}>.</span>
           </h1>
           <div
             className="mt-2 inline-block px-2 py-[3px] text-[9px] font-bold uppercase tracking-[0.28em]"
