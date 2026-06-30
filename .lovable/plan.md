@@ -1,67 +1,55 @@
+## Goal
+Remove the standalone banner/intro page and turn `/profile` into the landing page. Add a HYROX-style yellow/black industrial banner, a quadrant chart at the top with a "target" marker, and tighten every section (weekly plan, body composition, functional scores) so they read denser and clearer. Replace heavy black "you are here" dots with horizontal scales + a "You are here" bar pin.
 
-## Scope
-Five connected changes on the Hybrid Protocol dashboard. All mock-data driven (no real Strava/wearable API yet — wired so it can be later).
+## Routing
+- Delete `src/routes/index.tsx` (current `BannerScreen` route) and the `BannerScreen.tsx` component.
+- Move profile content to root: rename `src/routes/profile.tsx` → `src/routes/index.tsx` with `createFileRoute("/")`. Default tab stays `train`.
+- Update any `<Link to="/profile">` / `<Link to="/">` references (ProfileHeader back button, wearables/session back links) accordingly.
 
-## 1. Card styling pass (global)
-- Replace `shadow-[var(--shadow-soft)]` on all cards with a visible 1px border using a slightly darker token (`--card-border`, e.g. neutral-200 / oklch ~0.92).
-- Remove `--shadow-soft` usage; keep `--shadow-sheet` only for the bottom Record sheet.
-- Apply across: TrainTab cards, History, OverviewTab cards (Quadrant, Insights, Retest, Benchmark, Functional, Asymmetry), AccentCallout, StreakBar.
+## Header / Banner
+Replace `ProfileHeader.tsx` with a HYROX-flavored banner:
+- Yellow (#FFD60A-ish) + near-black, sharp diagonal stripes / chevrons background, condensed display type.
+- Title "HYBRID PROTOCOL" + tagline "TRAIN. MEASURE. REPEAT." Last-updated line kept small.
+- No back button. Keep the small wearable icon (top-right) for `/wearables`.
+- Add new design tokens `--hyrox-yellow`, `--hyrox-black` in `src/styles.css`.
 
-## 2. Run sessions from Strava (Train tab)
-- Extend `weeklyPlan` data: RUN A / RUN B days get a `runData` object (mock, shaped like Strava activity):
-  `{ source: "Strava", distanceKm, durationMin, avgPaceMinPerKm, avgHr, maxHr, elevationM, calories }`.
-- New component `RunSessionCard` renders inside the day's accordion above the exercise list when `runData` exists: distance, pace, avg/max HR, duration, elevation, calories — read-only, with a small "Synced from Strava" tag.
-- Logging behaviour for run days: tapping the run card opens the session view (item 3) instead of the Record sheet; day completion logic updates to count the run as one completed item.
+## Train tab (new top section)
+New `TrainHeroCard` placed above the StreakBar:
+- Eyebrow "TRAIN" + heading.
+- Mini quadrant chart (reuse `QuadrantChart` visuals, simplified): shows current black dot AND a target ring at the elite center, with a subtle dashed line/arrow from current → target.
+- Streak count rendered inline ("12 day streak — every completed session nudges you toward Elite").
+- For every completed day (`celebratedDays`/logs), nudge the current dot a small step toward the target (compute interpolated position from `quadrantPosition` toward `{x:0.5,y:0.5}` based on completion count). Pure presentational — mock math, no backend.
 
-## 3. Session view (new route `/session/$sessionId`)
-- Mobile screen modelled on the attached Activity PNG:
-  - Header: back button, session title (e.g. "Run · Wednesday"), subtitle (date · type).
-  - HR over time line chart card (mock series, orange line on soft fill, min/max labels) — uses Recharts.
-  - Stat grid: Distance, Pace, Duration, Avg HR, Max HR, Calories.
-  - Zones bar list (Z1–Z5 % with horizontal bars), styled like the Stages section in the reference.
-  - "Muscles worked" card: SVG body silhouette (front view) with muscle groups tinted by effort intensity (low/med/high) + legend. Static SVG component `MuscleMap`.
-  - "Effort" summary: RPE 1–10 ring + perceived effort label (Easy / Moderate / Hard / Max).
-  - Linked training: list of the day's exercises with sets logged.
-- Accessed from: tapping a logged exercise row, the run card, or a History entry.
-- Mock data in `src/data/sessions.ts` keyed by session id.
+## Weekly Plan rows (shrink)
+In `TrainTab.tsx` `AccordionItem` header:
+- Single line layout: `[DATE + DAY left] · [SESSION chip] [focus text inline] · [Done/▾ right]`.
+- Smaller vertical padding (`py-2`), focus text truncated, session chip smaller.
+- Left column shows date over day (e.g. `24 NOV` bold, `MON` muted) per request.
 
-## 4. Coach notes at end of training
-- After the last exercise in a day's accordion, add a `NotesCard`:
-  - Textarea ("Notes for coach — how did it feel, pain, technique cues…").
-  - Save button → stored in component state + appended to the day's history entry as `notes`.
-  - Shown read-only in History and Session view under a "Notes" section with a small "Visible to coach" tag.
-- Data shape: extend `HistoryEntry` with `notes?: string`.
+## History
+- Each `HistoryEntry` row gains an optional `avgHr` field in `src/data/athlete.ts` (e.g. Strength B = 142 bpm). Render under the session line as `142 bpm avg HR`.
 
-## 5. Wearables screen (new route `/wearables`)
-- Mirrors the second reference PNG:
-  - Hero: watch illustration on radial orange dot-pattern background (use existing orange tokens; SVG dots + emoji/icon placeholder for the watch).
-  - Title "Connect Your Wearable" + subtitle.
-  - Capability chips: Heart rate, Sleep, SpO2, Steps, Calories, HRV.
-  - Supported devices line.
-  - "Watches" list: Apple Watch, Garmin, Coros, Fitbit, Amazefit — each row a bordered card with icon + chevron, tapping shows a toast "Coming soon".
-  - "Wearables" list: Connect Wearable device row.
-  - "Apps" list: **Strava** row marked Connected (green pill) — this is what populates the run data above.
-- Entry points: small "Devices" icon in the ProfileHeader top-right; also a row at the bottom of the Train tab "Connect a wearable →".
+## Overview tab
+### Body Composition card (`BenchmarkSlider`)
+- Card padding reduced (`p-4`), no big `Eyebrow` block on its own row.
+- New layout: large "Body Composition" heading on the left with small `Fat %` under it; on the right, the value `14.2%` rendered as a **legend pill** — light-green background, green text, no separate StatusPill, no "Optimal" word on the right.
+- Slider track stays but smaller (h-1.5), keep the optimal band coloring.
+- Replace the heavy black dot marker with a thin vertical bar + a tiny "You are here" label above the bar. Build a new shared component `YouAreHereMarker` (vertical line + label chip) used by both `BenchmarkSlider` and `AsymmetrySlider`.
 
-## Files
+### Functional Scores
+- Rename section: remove the "Lab Report" eyebrow; just heading "Functional Scores".
+- Tighter card (`p-4`, smaller accordion row padding).
+- For each non-asymmetry test (IMTP, CMJ, Drop Jump, Knee Extension), add normative scales below the value:
+  - Add `scale` metadata to `SubTest` in `src/data/athlete.ts`: `{ min, max, normalLow, optimalLow, optimalHigh, normalHigh, valueNumeric, unit }` (optional; falls back to existing string if absent).
+  - New `NormativeScale` component (same color-banded track as BenchmarkSlider, smaller) with `YouAreHereMarker`.
+- Asymmetry: rework `AsymmetrySlider` into a **balance scale**: center = 0% (best), left/right extremes show direction (e.g. "L>R 22%"). Track: green center band (±10%), amber (±10–18%), red (±18%+). Marker is the `YouAreHereMarker` bar pushed left/right based on signed asymmetry.
 
-New:
-- `src/routes/session.$sessionId.tsx`
-- `src/routes/wearables.tsx`
-- `src/components/hybrid/RunSessionCard.tsx`
-- `src/components/hybrid/NotesCard.tsx`
-- `src/components/hybrid/MuscleMap.tsx`
-- `src/components/hybrid/HrChart.tsx`
-- `src/components/hybrid/ZoneBars.tsx`
-- `src/data/sessions.ts`
+## Files touched
+- Delete: `src/components/hybrid/BannerScreen.tsx`, `src/routes/index.tsx` (old).
+- Rename/replace: `src/routes/profile.tsx` → new `src/routes/index.tsx`.
+- Edit: `src/components/hybrid/ProfileHeader.tsx` (HYROX banner), `TrainTab.tsx` (hero card, denser rows, history HR), `BenchmarkSlider.tsx` (compact + legend pill), `AsymmetrySlider.tsx` (signed/balance), `FunctionalScores.tsx` (no Lab Report eyebrow, tighter, normative scales), `OverviewTab.tsx` (heading copy), `src/data/athlete.ts` (add scale + history HR), `src/styles.css` (yellow tokens).
+- New: `TrainHeroCard.tsx`, `YouAreHereMarker.tsx`, `NormativeScale.tsx`.
 
-Edited:
-- `src/styles.css` — add `--card-border`, drop soft shadows from card recipes.
-- `src/data/athlete.ts` — add `runData` to RUN days, `notes` on HistoryEntry, session ids on exercises/days.
-- `src/components/hybrid/TrainTab.tsx` — borders, run card, notes card, link to session view, wearable CTA row.
-- `src/components/hybrid/OverviewTab.tsx` + all card components — swap shadow → border.
-- `src/components/hybrid/ProfileHeader.tsx` — devices icon button → `/wearables`.
-
-## Notes / open items
-- No real Strava OAuth — UI only, mock data labelled "Synced from Strava". Real integration can come later via a server function.
-- Muscle map is a stylised SVG, not anatomically exhaustive: chest, shoulders, biceps, forearms, abs, quads, calves (front) — enough to communicate focus.
+## Out of scope
+- No new backend/data wiring; quadrant "movement toward target" is mock interpolation only.
+- No changes to wearables/session detail pages beyond fixing the back-link target.
