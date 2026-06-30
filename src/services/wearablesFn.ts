@@ -54,6 +54,24 @@ type OWWorkout = {
 
 type OWTimeseries = { type: string; value: number; timestamp: string };
 
+// OW providers we have OAuth configured for
+export const OW_OAUTH_PROVIDERS = ["whoop", "strava", "garmin", "oura", "apple"] as const;
+export type OWProvider = (typeof OW_OAUTH_PROVIDERS)[number];
+
+export const getOAuthUrl = createServerFn()
+  .inputValidator((input: { provider: string; userId: string; returnUrl: string }) => input)
+  .handler(async ({ data }: { data: { provider: string; userId: string; returnUrl: string } }) => {
+    const url = new URL(`${baseUrl()}/oauth/${data.provider}/authorize`);
+    url.searchParams.set("user_id", data.userId);
+    url.searchParams.set("redirect_uri", data.returnUrl);
+    const res = await fetch(url.toString(), {
+      headers: { "X-Open-Wearables-API-Key": apiKey() },
+    });
+    if (!res.ok) throw new Error(`OW oauth ${res.status}: ${data.provider}`);
+    const json = (await res.json()) as { authorization_url: string };
+    return json.authorization_url;
+  });
+
 export const fetchWhoopSummary = createServerFn()
   .validator((userId: string) => userId)
   .handler(async ({ data: userId }) => {
