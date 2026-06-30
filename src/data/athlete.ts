@@ -1,5 +1,6 @@
 export type SessionType = "STRENGTH A" | "STRENGTH B" | "RUN A" | "RUN B" | "HYBRID" | "REST";
 import type { Status } from "@/lib/status";
+import type { Scale } from "@/components/hybrid/NormativeScale";
 
 export interface Exercise {
   id: string;
@@ -24,6 +25,7 @@ export interface SubTest {
   correlation: string;
   value: string;
   status: Status;
+  scale?: Scale & { valueNumeric: number };
 }
 
 export interface FunctionalCategory {
@@ -39,6 +41,7 @@ export interface HistoryEntry {
   logs: { name: string; sets: { reps: number; weight: number }[] }[];
   notes?: string;
   sessionId?: string;
+  avgHr?: number;
 }
 
 export interface RunData {
@@ -112,9 +115,27 @@ export const functionalScores: FunctionalCategory[] = [
   {
     title: "Neuromuscular Power",
     tests: [
-      { name: "Isometric Mid Thigh Pull", correlation: "Start Strength / Sled Push", value: "161 kg", status: "optimal" },
-      { name: "Counter Movement Jump", correlation: "Wall Ball & Burpee capacity", value: "46 W/kg", status: "optimal" },
-      { name: "Drop Jump", correlation: "Running Economy / tendon stiffness", value: "RSI 0.62", status: "normal" },
+      {
+        name: "Isometric Mid Thigh Pull",
+        correlation: "Start Strength / Sled Push",
+        value: "161 kg",
+        status: "optimal",
+        scale: { valueNumeric: 161, min: 80, max: 240, optimalLow: 140, optimalHigh: 200, unit: "kg" },
+      },
+      {
+        name: "Counter Movement Jump",
+        correlation: "Wall Ball & Burpee capacity",
+        value: "46 W/kg",
+        status: "optimal",
+        scale: { valueNumeric: 46, min: 25, max: 70, optimalLow: 42, optimalHigh: 55, unit: "W/kg" },
+      },
+      {
+        name: "Drop Jump",
+        correlation: "Running Economy / tendon stiffness",
+        value: "RSI 0.62",
+        status: "normal",
+        scale: { valueNumeric: 0.62, min: 0.2, max: 1.8, optimalLow: 0.7, optimalHigh: 1.2, unit: "RSI" },
+      },
     ],
   },
   {
@@ -127,8 +148,8 @@ export const functionalScores: FunctionalCategory[] = [
   {
     title: "Isometric Power",
     tests: [
-      { name: "Hand Grip Squeeze Endurance", correlation: "Farmer's Carry", value: "L 43.3 / R 39.4 kg · −22.9/−22%", status: "suboptimal" },
-      { name: "Isometric Knee Extension", correlation: "Sandbag Lunges / shock absorption", value: "L 46.7 / R 47.5 kg", status: "optimal" },
+      { name: "Hand Grip Squeeze Endurance", correlation: "Farmer's Carry", value: "L 43.3 / R 39.4 kg · 22% L>R", status: "suboptimal" },
+      { name: "Isometric Knee Extension", correlation: "Shock absorption", value: "L 46.7 / R 47.5 kg · 1.7% R>L", status: "optimal" },
       { name: "Overhead Isometric Press", correlation: "Wall Ball Efficiency", value: "L 20.4 / R 19.1 kg · 6.5% R>L", status: "normal" },
     ],
   },
@@ -235,6 +256,7 @@ export const history: HistoryEntry[] = [
     session: "STRENGTH B",
     exercisesCompleted: 3,
     totalVolume: 4280,
+    avgHr: 142,
     logs: [
       { name: "Weighted Pull-up", sets: [
         { reps: 6, weight: 10 }, { reps: 6, weight: 12.5 }, { reps: 5, weight: 15 }, { reps: 4, weight: 15 },
@@ -252,6 +274,7 @@ export const history: HistoryEntry[] = [
     session: "RUN A",
     exercisesCompleted: 3,
     totalVolume: 0,
+    avgHr: 162,
     logs: [
       { name: "Warmup", sets: [{ reps: 1, weight: 0 }] },
       { name: "800m intervals", sets: Array.from({ length: 6 }, () => ({ reps: 1, weight: 0 })) },
@@ -263,6 +286,7 @@ export const history: HistoryEntry[] = [
     session: "STRENGTH A",
     exercisesCompleted: 3,
     totalVolume: 5120,
+    avgHr: 138,
     logs: [
       { name: "Trap Bar Deadlift", sets: [
         { reps: 5, weight: 100 }, { reps: 5, weight: 110 }, { reps: 3, weight: 120 }, { reps: 3, weight: 120 },
