@@ -76,7 +76,7 @@ function WearablesPage() {
     <main className="min-h-screen bg-background pb-16">
       <header className="relative px-5 pb-2 pt-5">
         <Link
-          to="/profile"
+          to="/"
           className="grid h-9 w-9 place-items-center rounded-full border border-[var(--card-border)] bg-card text-foreground"
           aria-label="Back"
         >

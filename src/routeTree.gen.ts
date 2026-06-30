@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WearablesRouteImport } from './routes/wearables'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionSessionIdRouteImport } from './routes/session.$sessionId'
 
 const WearablesRoute = WearablesRouteImport.update({
   id: '/wearables',
   path: '/wearables',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SessionSessionIdRoute = SessionSessionIdRouteImport.update({
@@ -24,27 +30,31 @@ const SessionSessionIdRoute = SessionSessionIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/wearables': typeof WearablesRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/wearables': typeof WearablesRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/wearables': typeof WearablesRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/wearables' | '/session/$sessionId'
+  fullPaths: '/' | '/wearables' | '/session/$sessionId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/wearables' | '/session/$sessionId'
-  id: '__root__' | '/wearables' | '/session/$sessionId'
+  to: '/' | '/wearables' | '/session/$sessionId'
+  id: '__root__' | '/' | '/wearables' | '/session/$sessionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   WearablesRoute: typeof WearablesRoute
   SessionSessionIdRoute: typeof SessionSessionIdRoute
 }
@@ -58,6 +68,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WearablesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/session/$sessionId': {
       id: '/session/$sessionId'
       path: '/session/$sessionId'
@@ -69,6 +86,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   WearablesRoute: WearablesRoute,
   SessionSessionIdRoute: SessionSessionIdRoute,
 }
