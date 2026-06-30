@@ -279,8 +279,15 @@ function HistorySection({ history }: { history: HistoryEntry[] }) {
                 <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                   {h.date}
                 </span>
-                <span className="truncate text-sm font-medium text-foreground">{h.session}</span>
-                <span className="text-[11px] text-muted-foreground">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-medium text-foreground">{h.session}</div>
+                  {h.avgHr !== undefined && (
+                    <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
+                      ♥ {h.avgHr} bpm avg
+                    </div>
+                  )}
+                </div>
+                <span className="text-[11px] text-muted-foreground tabular-nums">
                   {h.exercisesCompleted} ex · {h.totalVolume.toLocaleString()} kg
                 </span>
               </div>
