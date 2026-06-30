@@ -89,13 +89,13 @@ export function TrainHeroCard({ completedCount = 0 }: { completedCount?: number 
           </div>
           <div className="mt-2 flex items-center gap-2">
             <span
-              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+              className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
               style={{ background: "var(--hyrox-black)", color: "var(--hyrox-yellow)" }}
             >
               <Flame className="h-3 w-3" />
               {streak.days + completedCount}d streak
             </span>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <span className="whitespace-nowrap text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               {completedCount} logged this week
             </span>
           </div>
