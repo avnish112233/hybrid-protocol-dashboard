@@ -10,12 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WearablesRouteImport } from './routes/wearables'
+import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionSessionIdRouteImport } from './routes/session.$sessionId'
 
 const WearablesRoute = WearablesRouteImport.update({
   id: '/wearables',
   path: '/wearables',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -31,30 +43,44 @@ const SessionSessionIdRoute = SessionSessionIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/verify': typeof VerifyRoute
   '/wearables': typeof WearablesRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/verify': typeof VerifyRoute
   '/wearables': typeof WearablesRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/verify': typeof VerifyRoute
   '/wearables': typeof WearablesRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/wearables' | '/session/$sessionId'
+  fullPaths: '/' | '/login' | '/verify' | '/wearables' | '/session/$sessionId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/wearables' | '/session/$sessionId'
-  id: '__root__' | '/' | '/wearables' | '/session/$sessionId'
+  to: '/' | '/login' | '/verify' | '/wearables' | '/session/$sessionId'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/verify'
+    | '/wearables'
+    | '/session/$sessionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  VerifyRoute: typeof VerifyRoute
   WearablesRoute: typeof WearablesRoute
   SessionSessionIdRoute: typeof SessionSessionIdRoute
 }
@@ -66,6 +92,20 @@ declare module '@tanstack/react-router' {
       path: '/wearables'
       fullPath: '/wearables'
       preLoaderRoute: typeof WearablesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -87,6 +127,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
+  VerifyRoute: VerifyRoute,
   WearablesRoute: WearablesRoute,
   SessionSessionIdRoute: SessionSessionIdRoute,
 }
