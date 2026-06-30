@@ -1,5 +1,5 @@
-import { Eyebrow } from "./Eyebrow";
-import { getBenchmarkStatus, statusColor, StatusPill } from "@/lib/status";
+import { getBenchmarkStatus, statusColor } from "@/lib/status";
+import { YouAreHereMarker } from "./YouAreHereMarker";
 
 interface Props {
   eyebrow: string;
@@ -43,40 +43,37 @@ export function BenchmarkSlider({
     var(--status-suboptimal) ${normalHighPct}%,
     var(--status-suboptimal) 100%)`;
 
+  const sColor = statusColor[status];
   return (
-    <section className="rounded-2xl bg-card p-5 border border-[var(--card-border)]">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <Eyebrow>{eyebrow}</Eyebrow>
-          <div className="mt-1 text-base font-medium text-foreground">{label}</div>
+    <section className="rounded-2xl border border-[var(--card-border)] bg-card p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3
+            className="text-lg leading-tight tracking-tight text-foreground"
+            style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+          >
+            {eyebrow.charAt(0) + eyebrow.slice(1).toLowerCase()}
+          </h3>
+          <div className="mt-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            {label}
+          </div>
         </div>
-        <StatusPill status={status} />
-      </div>
-
-      <div className="mt-4 flex items-baseline gap-1.5">
         <span
-          className="text-4xl tabular-nums tracking-tight"
+          className="shrink-0 rounded-full px-2.5 py-1 text-sm font-semibold tabular-nums"
           style={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 300,
-            color: statusColor[status],
+            color: sColor,
+            background: `color-mix(in oklab, ${sColor} 14%, transparent)`,
           }}
         >
-          {value}
+          {value}{unit === "%" ? "%" : ` ${unit}`}
         </span>
-        <span className="text-sm font-medium text-muted-foreground">{unit}</span>
       </div>
 
-      <div className="relative mt-5 h-2 w-full overflow-hidden rounded-full opacity-90" style={{ background: trackBg }} />
-      <div
-        className="relative -mt-[14px] h-[26px]"
-        style={{ marginLeft: `calc(${pct(value)}% - 13px)`, width: 26 }}
-      >
-        <div className="grid h-full w-full place-items-center">
-          <div className="h-[26px] w-[26px] rounded-full border-[3px] border-card bg-foreground shadow-md" />
-        </div>
+      <div className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full opacity-90" style={{ background: trackBg }} />
+      <div className="relative h-5">
+        <YouAreHereMarker leftPct={pct(value)} color={sColor} />
       </div>
-      <div className="mt-3 flex justify-between text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="mt-0.5 flex justify-between text-[9px] font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
         <span>{min}{unit === "%" ? "%" : ""}</span>
         <span>Optimal {benchmarkLow}–{benchmarkHigh}</span>
         <span>{max}{unit === "%" ? "%" : ""}</span>
