@@ -55,8 +55,8 @@ type OWWorkout = {
 type OWTimeseries = { type: string; value: number; timestamp: string };
 
 export const fetchWhoopSummary = createServerFn()
-  .validator((userId: string) => userId)
-  .handler(async ({ data: userId }) => {
+  .inputValidator((userId: string) => userId)
+  .handler(async ({ data: userId }: { data: string }) => {
     const range = dateRange(90);
 
     const [workoutsRes, sleepRes, recoveryRes, timeseriesRes] = await Promise.all([
