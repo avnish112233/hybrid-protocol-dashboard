@@ -2,7 +2,7 @@ export type SessionType = "STRENGTH A" | "STRENGTH B" | "RUN A" | "RUN B" | "HYB
 import type { Status } from "@/lib/status";
 import type { Scale } from "@/components/hybrid/NormativeScale";
 import { computeQuadrant } from "@/lib/quadrant";
-import { getVO2Ref, getFatPctRef, getAlmiRef } from "@/lib/references";
+import { DEFAULT_REFERENCE_CONFIG } from "@/lib/references";
 
 export interface Exercise {
   id: string;
@@ -66,8 +66,8 @@ export const athlete = {
   dob: "27/11/1983",
 };
 
-// Raw metrics — single source of truth for scoring and chart position
-const athleteMetrics = {
+// Raw test values — update these after each retest
+export const athleteMetrics = {
   age: athlete.age,
   sex: athlete.sex,
   vo2max: 46.11,
@@ -79,7 +79,9 @@ const athleteMetrics = {
   suboptimalAsymmetries: 1, // grip endurance 22% L>R
 };
 
-export const quadrant = computeQuadrant(athleteMetrics);
+// Module-level computation uses hardcoded defaults (works for SSR + first render)
+// QuadrantChart re-runs with live DB config once useReferenceConfig() resolves
+export const quadrant = computeQuadrant(athleteMetrics, DEFAULT_REFERENCE_CONFIG.quadrant);
 export const quadrantPosition = { x: quadrant.x, y: quadrant.y };
 
 export const insights = {
@@ -95,43 +97,18 @@ export const insights = {
   ],
 };
 
-// Age/sex-adjusted reference ranges pulled from reference tables at runtime
-const _fatRef  = getFatPctRef(athlete.age, athlete.sex);
-const _almiRef = getAlmiRef(athlete.age, athlete.sex);
-const _vo2Ref  = getVO2Ref(athlete.age, athlete.sex);
+// Static measured values — ranges are computed at runtime from reference config
+export const benchmarkValues = {
+  fatPct: 14.2,
+  almi:   7.6,
+  vo2max: 46.11,
+};
 
+// Kept for backwards compat; OverviewTab now uses useBenchmarks() for live ranges
 export const benchmarks = [
-  {
-    eyebrow: "BODY COMPOSITION",
-    label: "FAT %",
-    value: 14.2,
-    unit: "%",
-    benchmarkLow: _fatRef.optimalLow,
-    benchmarkHigh: _fatRef.optimalHigh,
-    min: Math.max(0, _fatRef.normalLow - 2),
-    max: _fatRef.normalHigh + 5,
-  },
-  {
-    eyebrow: "LEAN MASS",
-    label: "ALMI",
-    value: 7.6,
-    unit: "kg/m²",
-    benchmarkLow: _almiRef.optimalLow,
-    benchmarkHigh: _almiRef.optimalHigh,
-    min: Math.max(4, _almiRef.normalLow - 1),
-    max: _almiRef.normalHigh + 1,
-  },
-  {
-    eyebrow: "AEROBIC CAPACITY",
-    label: "VO2 MAX",
-    value: 46.11,
-    unit: "ml/min/kg",
-    // "optimal" window = p60 to p80 (above average to excellent for this age group)
-    benchmarkLow: _vo2Ref.p60,
-    benchmarkHigh: _vo2Ref.p80,
-    min: Math.max(20, _vo2Ref.p20 - 5),
-    max: _vo2Ref.p80 + 15,
-  },
+  { eyebrow: "BODY COMPOSITION", label: "FAT %",    value: benchmarkValues.fatPct, unit: "%",       benchmarkLow: 8,   benchmarkHigh: 15,  min: 4,  max: 25  },
+  { eyebrow: "LEAN MASS",        label: "ALMI",     value: benchmarkValues.almi,   unit: "kg/m²",   benchmarkLow: 8.3, benchmarkHigh: 10.3,min: 6,  max: 12  },
+  { eyebrow: "AEROBIC CAPACITY", label: "VO2 MAX",  value: benchmarkValues.vo2max, unit: "ml/min/kg",benchmarkLow: 44,  benchmarkHigh: 52,  min: 28, max: 67  },
 ];
 
 export const functionalScores: FunctionalCategory[] = [
