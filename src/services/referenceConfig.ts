@@ -1,7 +1,7 @@
 import type { ReferenceConfig } from "@/lib/references";
 
-const BASE = "https://open-wearables-platform-production.up.railway.app/api/v1";
-const KEY  = "sk-7bfb062041b3ca4e8ab97fbe87dd198e";
+const BASE = import.meta.env.VITE_OW_BASE_URL ?? "https://open-wearables-platform-production.up.railway.app/api/v1";
+const KEY  = import.meta.env.VITE_OW_API_KEY as string;
 
 export async function fetchReferenceConfig(): Promise<ReferenceConfig | null> {
   const res = await fetch(`${BASE}/bond/reference-config`, {

@@ -1,8 +1,33 @@
 import { CalendarClock, TrendingDown, TrendingUp } from "lucide-react";
 import { Eyebrow } from "./Eyebrow";
-import { retest } from "@/data/athlete";
+import { useAthleteProfile } from "@/hooks/useAthleteProfile";
+
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  } catch {
+    return iso;
+  }
+}
+
+function addMonths(iso: string, months: number): string {
+  try {
+    const d = new Date(iso);
+    d.setMonth(d.getMonth() + months);
+    return formatDate(d.toISOString());
+  } catch {
+    return "—";
+  }
+}
 
 export function RetestCard() {
+  const { data: profile } = useAthleteProfile();
+  const dexa = profile?.vi?.dexa;
+
+  const lastTested = dexa?.date ?? null;
+  const nextRetest = lastTested ? addMonths(lastTested, 6) : "—";
+
   return (
     <section className="rounded-2xl bg-card p-5 border border-[var(--card-border)]">
       <div className="flex items-start justify-between gap-4">
@@ -49,7 +74,7 @@ export function RetestCard() {
             className="mt-0.5 text-sm tabular-nums text-foreground"
             style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}
           >
-            {retest.lastTested}
+            {formatDate(lastTested)}
           </div>
         </div>
         <div>
@@ -60,7 +85,7 @@ export function RetestCard() {
             className="mt-0.5 text-sm tabular-nums text-foreground"
             style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}
           >
-            {retest.nextRetest}
+            {nextRetest}
           </div>
         </div>
       </div>

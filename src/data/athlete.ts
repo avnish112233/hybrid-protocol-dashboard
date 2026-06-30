@@ -1,8 +1,6 @@
 export type SessionType = "STRENGTH A" | "STRENGTH B" | "RUN A" | "RUN B" | "HYBRID" | "REST";
 import type { Status } from "@/lib/status";
 import type { Scale } from "@/components/hybrid/NormativeScale";
-import { computeQuadrant } from "@/lib/quadrant";
-import { DEFAULT_REFERENCE_CONFIG } from "@/lib/references";
 
 export interface Exercise {
   id: string;
@@ -50,115 +48,12 @@ export interface RunData {
   source: "Strava";
   distanceKm: number;
   durationMin: number;
-  avgPaceLabel: string; // e.g. "5:12 /km"
+  avgPaceLabel: string;
   avgHr: number;
   maxHr: number;
   elevationM: number;
   calories: number;
 }
-
-export const athlete = {
-  name: "HARINAG S P",
-  height: "163cm",
-  weight: "66kg",
-  age: 42,
-  sex: "male" as const,
-  dob: "27/11/1983",
-};
-
-// Raw test values — update these after each retest
-export const athleteMetrics = {
-  age: athlete.age,
-  sex: athlete.sex,
-  vo2max: 46.11,
-  imtpKg: 161,
-  bodyWeightKg: 66,
-  cmjWattsPerKg: 46,
-  dropJumpRsi: 0.62,
-  bodyFatPct: 14.2,
-  suboptimalAsymmetries: 1, // grip endurance 22% L>R
-};
-
-// Module-level computation uses hardcoded defaults (works for SSR + first render)
-// QuadrantChart re-runs with live DB config once useReferenceConfig() resolves
-export const quadrant = computeQuadrant(athleteMetrics, DEFAULT_REFERENCE_CONFIG.quadrant);
-export const quadrantPosition = { x: quadrant.x, y: quadrant.y };
-
-export const insights = {
-  suggestions: [
-    "Add a dedicated grip endurance block twice weekly",
-    "Increase Z2 aerobic volume by 20% over 4 weeks",
-    "Programme sled-push intervals to leverage start strength",
-  ],
-  injuryRisks: [
-    { label: "Grip endurance asymmetry (22% L>R)", severity: "suboptimal" as Status },
-    { label: "Knee extension shock absorption load", severity: "normal" as Status },
-    { label: "Overhead press balance (6.5% R>L)", severity: "normal" as Status },
-  ],
-};
-
-// Static measured values — ranges are computed at runtime from reference config
-export const benchmarkValues = {
-  fatPct: 14.2,
-  almi:   7.6,
-  vo2max: 46.11,
-};
-
-// Kept for backwards compat; OverviewTab now uses useBenchmarks() for live ranges
-export const benchmarks = [
-  { eyebrow: "BODY COMPOSITION", label: "FAT %",    value: benchmarkValues.fatPct, unit: "%",       benchmarkLow: 8,   benchmarkHigh: 15,  min: 4,  max: 25  },
-  { eyebrow: "LEAN MASS",        label: "ALMI",     value: benchmarkValues.almi,   unit: "kg/m²",   benchmarkLow: 8.3, benchmarkHigh: 10.3,min: 6,  max: 12  },
-  { eyebrow: "AEROBIC CAPACITY", label: "VO2 MAX",  value: benchmarkValues.vo2max, unit: "ml/min/kg",benchmarkLow: 44,  benchmarkHigh: 52,  min: 28, max: 67  },
-];
-
-export const functionalScores: FunctionalCategory[] = [
-  {
-    title: "Neuromuscular Power",
-    tests: [
-      {
-        name: "Isometric Mid Thigh Pull",
-        correlation: "Start Strength / Sled Push",
-        value: "161 kg",
-        status: "optimal",
-        scale: { valueNumeric: 161, min: 80, max: 240, optimalLow: 140, optimalHigh: 200, unit: "kg" },
-      },
-      {
-        name: "Counter Movement Jump",
-        correlation: "Wall Ball & Burpee capacity",
-        value: "46 W/kg",
-        status: "optimal",
-        scale: { valueNumeric: 46, min: 25, max: 70, optimalLow: 42, optimalHigh: 55, unit: "W/kg" },
-      },
-      {
-        name: "Drop Jump",
-        correlation: "Running Economy / tendon stiffness",
-        value: "RSI 0.62",
-        status: "normal",
-        scale: { valueNumeric: 0.62, min: 0.2, max: 1.8, optimalLow: 0.7, optimalHigh: 1.2, unit: "RSI" },
-      },
-    ],
-  },
-  {
-    title: "Hybrid Strength",
-    tests: [
-      { name: "Single Leg Jump", correlation: "Sandbag Lunges", value: "L 40.4 / R 39 kg · 3.7% L>R", status: "normal" },
-      { name: "Isometric Lat Pull", correlation: "SkiErg Efficiency", value: "L 28 / R 27.6 kg · 1.4% L>R", status: "optimal" },
-    ],
-  },
-  {
-    title: "Isometric Power",
-    tests: [
-      { name: "Hand Grip Squeeze Endurance", correlation: "Farmer's Carry", value: "L 43.3 / R 39.4 kg · 22% L>R", status: "suboptimal" },
-      { name: "Isometric Knee Extension", correlation: "Shock absorption", value: "L 46.7 / R 47.5 kg · 1.7% R>L", status: "optimal" },
-      { name: "Overhead Isometric Press", correlation: "Wall Ball Efficiency", value: "L 20.4 / R 19.1 kg · 6.5% R>L", status: "normal" },
-    ],
-  },
-];
-
-export const retest = {
-  lastTested: "12 Sep 2025",
-  nextRetest: "12 Mar 2026",
-};
 
 export const weeklyPlan: DayPlan[] = [
   {
