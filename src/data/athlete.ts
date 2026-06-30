@@ -1,6 +1,8 @@
 export type SessionType = "STRENGTH A" | "STRENGTH B" | "RUN A" | "RUN B" | "HYBRID" | "REST";
 import type { Status } from "@/lib/status";
 import type { Scale } from "@/components/hybrid/NormativeScale";
+import { computeQuadrant } from "@/lib/quadrant";
+import { getVO2Ref, getFatPctRef, getAlmiRef } from "@/lib/references";
 
 export interface Exercise {
   id: string;
@@ -60,10 +62,25 @@ export const athlete = {
   height: "163cm",
   weight: "66kg",
   age: 42,
+  sex: "male" as const,
   dob: "27/11/1983",
 };
 
-export const quadrantPosition = { x: 0.58, y: 0.68 };
+// Raw metrics — single source of truth for scoring and chart position
+const athleteMetrics = {
+  age: athlete.age,
+  sex: athlete.sex,
+  vo2max: 46.11,
+  imtpKg: 161,
+  bodyWeightKg: 66,
+  cmjWattsPerKg: 46,
+  dropJumpRsi: 0.62,
+  bodyFatPct: 14.2,
+  suboptimalAsymmetries: 1, // grip endurance 22% L>R
+};
+
+export const quadrant = computeQuadrant(athleteMetrics);
+export const quadrantPosition = { x: quadrant.x, y: quadrant.y };
 
 export const insights = {
   suggestions: [
@@ -78,36 +95,42 @@ export const insights = {
   ],
 };
 
+// Age/sex-adjusted reference ranges pulled from reference tables at runtime
+const _fatRef  = getFatPctRef(athlete.age, athlete.sex);
+const _almiRef = getAlmiRef(athlete.age, athlete.sex);
+const _vo2Ref  = getVO2Ref(athlete.age, athlete.sex);
+
 export const benchmarks = [
   {
     eyebrow: "BODY COMPOSITION",
     label: "FAT %",
     value: 14.2,
     unit: "%",
-    benchmarkLow: 8,
-    benchmarkHigh: 15,
-    min: 5,
-    max: 25,
+    benchmarkLow: _fatRef.optimalLow,
+    benchmarkHigh: _fatRef.optimalHigh,
+    min: Math.max(0, _fatRef.normalLow - 2),
+    max: _fatRef.normalHigh + 5,
   },
   {
     eyebrow: "LEAN MASS",
     label: "ALMI",
     value: 7.6,
     unit: "kg/m²",
-    benchmarkLow: 7.5,
-    benchmarkHigh: 9.5,
-    min: 5,
-    max: 11,
+    benchmarkLow: _almiRef.optimalLow,
+    benchmarkHigh: _almiRef.optimalHigh,
+    min: Math.max(4, _almiRef.normalLow - 1),
+    max: _almiRef.normalHigh + 1,
   },
   {
     eyebrow: "AEROBIC CAPACITY",
     label: "VO2 MAX",
     value: 46.11,
     unit: "ml/min/kg",
-    benchmarkLow: 45,
-    benchmarkHigh: 55,
-    min: 30,
-    max: 65,
+    // "optimal" window = p60 to p80 (above average to excellent for this age group)
+    benchmarkLow: _vo2Ref.p60,
+    benchmarkHigh: _vo2Ref.p80,
+    min: Math.max(20, _vo2Ref.p20 - 5),
+    max: _vo2Ref.p80 + 15,
   },
 ];
 

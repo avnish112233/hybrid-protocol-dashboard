@@ -1,31 +1,71 @@
 import { Eyebrow } from "./Eyebrow";
 import { AccentCallout } from "./AccentCallout";
-import { quadrantPosition, insights } from "@/data/athlete";
+import { quadrantPosition, quadrant, insights } from "@/data/athlete";
 
 function Quadrant() {
   const { x, y } = quadrantPosition;
   const cx = x * 100;
   const cy = (1 - y) * 100;
+
+  // Faint quadrant tint — green = elite, amber = developing
+  const tintTL = "color-mix(in oklab, var(--status-normal) 8%, transparent)";
+  const tintTR = "color-mix(in oklab, var(--status-optimal) 8%, transparent)";
+  const tintBL = "color-mix(in oklab, var(--status-suboptimal) 6%, transparent)";
+  const tintBR = "color-mix(in oklab, var(--status-suboptimal) 4%, transparent)";
+
   return (
-    <div className="relative mx-auto h-[200px] w-full max-w-[260px] overflow-hidden rounded-2xl bg-surface">
+    <div className="relative mx-auto h-[220px] w-full max-w-[280px] overflow-hidden rounded-2xl bg-surface">
+      {/* Quadrant tints */}
+      <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 pointer-events-none">
+        <div style={{ background: tintTL }} />
+        <div style={{ background: tintTR }} />
+        <div style={{ background: tintBL }} />
+        <div style={{ background: tintBR }} />
+      </div>
+
+      {/* Axes */}
       <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border" />
       <div className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-border" />
-      <span className="absolute left-1/2 top-1.5 -translate-x-1/2 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Elite
+
+      {/* Quadrant labels */}
+      <span className="absolute left-[25%] top-2 -translate-x-1/2 text-[8px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+        Strength Elite
       </span>
-      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Developing
+      <span className="absolute left-[75%] top-2 -translate-x-1/2 text-[8px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+        Hybrid Elite
       </span>
-      <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Strength
+      <span className="absolute left-[25%] bottom-2 -translate-x-1/2 text-[8px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+        Str. Foundation
       </span>
-      <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Aerobic
+      <span className="absolute left-[75%] bottom-2 -translate-x-1/2 text-[8px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+        Aero. Foundation
       </span>
+
+      {/* Axis labels */}
+      <span className="absolute left-1 top-1/2 -translate-y-1/2 rotate-[-90deg] origin-center text-[7px] font-bold uppercase tracking-widest text-muted-foreground/50">
+        Capacity
+      </span>
+      <span className="absolute right-1 top-1/2 -translate-y-1/2 rotate-[90deg] origin-center text-[7px] font-bold uppercase tracking-widest text-muted-foreground/50">
+        {" "}
+      </span>
+
+      {/* Athlete dot */}
       <div
-        className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground ring-4 ring-foreground/15"
+        className="absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground ring-4 ring-foreground/15 shadow-sm"
         style={{ left: `${cx}%`, top: `${cy}%` }}
       />
+
+      {/* Score bars — right side mini legend */}
+      <div className="absolute right-2 bottom-8 flex flex-col gap-1 items-end">
+        <span className="text-[7px] uppercase tracking-wider text-muted-foreground/50">Aerobic</span>
+        <div className="w-12 h-1 rounded-full bg-border overflow-hidden">
+          <div className="h-full rounded-full bg-foreground/40" style={{ width: `${quadrant.aerobicScore * 100}%` }} />
+        </div>
+        <span className="text-[7px] uppercase tracking-wider text-muted-foreground/50">Strength</span>
+        <div className="w-12 h-1 rounded-full bg-border overflow-hidden">
+          <div className="h-full rounded-full bg-foreground/40" style={{ width: `${quadrant.strengthScore * 100}%` }} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -33,12 +73,34 @@ function Quadrant() {
 export function QuadrantChart() {
   return (
     <section className="rounded-2xl border border-[var(--card-border)] bg-card p-4">
-      <h2 className="text-xs font-medium text-foreground">Athlete profile</h2>
-      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-        Your position on the HYROX map — overall capacity vs. strength/aerobic mix.
-      </p>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h2 className="text-xs font-medium text-foreground">Athlete profile</h2>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+            Capacity vs. aerobic/strength mix — calibrated to HYROX age-group population
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full border border-[var(--card-border)] bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground">
+          {quadrant.label}
+        </span>
+      </div>
+
       <div className="mt-4 rounded-xl border border-[var(--card-border)] bg-card p-3">
         <Quadrant />
+      </div>
+
+      {/* Score breakdown */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="rounded-xl bg-surface px-3 py-2">
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Aerobic</div>
+          <div className="mt-1 text-sm font-semibold text-foreground">{quadrant.aerobicLabel}</div>
+          <div className="text-[10px] text-muted-foreground">{Math.round(quadrant.aerobicScore * 100)}th pct</div>
+        </div>
+        <div className="rounded-xl bg-surface px-3 py-2">
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Strength</div>
+          <div className="mt-1 text-sm font-semibold text-foreground">{quadrant.strengthLabel}</div>
+          <div className="text-[10px] text-muted-foreground">{Math.round(quadrant.strengthScore * 100)}th pct</div>
+        </div>
       </div>
 
       <AccentCallout tone="orange" className="mt-4">
@@ -46,8 +108,7 @@ export function QuadrantChart() {
           What this means for you
         </div>
         <p className="mt-1 text-[13px] leading-relaxed text-foreground/85">
-          You sit in the upper-aerobic half of the map. Your engine is ahead of your
-          raw strength — translate that capacity into stronger sled and carry work.
+          {quadrant.insight}
         </p>
       </AccentCallout>
 
