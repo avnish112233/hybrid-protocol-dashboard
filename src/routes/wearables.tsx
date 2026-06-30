@@ -50,6 +50,7 @@ export const Route = createFileRoute("/wearables")({
 const OW_USER_ID = import.meta.env.VITE_OW_USER_ID as string | undefined;
 
 const watches = [
+  { name: "Whoop", icon: Waves, owProvider: "whoop" as const },
   { name: "Apple Watch", icon: Apple, owProvider: "apple" as const },
   { name: "Garmin", icon: Watch, owProvider: "garmin" as const },
   { name: "Oura", icon: Watch, owProvider: "oura" as const },
@@ -144,14 +145,16 @@ function WearablesPage() {
         </p>
       </section>
 
-      {/* Whoop live tile — shown when VITE_OW_USER_ID is set */}
+      {/* Whoop live tile — shown when data is loading or available */}
       {(whoopLoading || whoop || whoopError) && (
         <section className="mt-6 px-5">
           <div className="flex items-center justify-between mb-2">
             <Eyebrow className="px-1">Whoop</Eyebrow>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--status-optimal)_18%,transparent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--status-optimal)]">
-              Connected
-            </span>
+            {whoop && !whoopError && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--status-optimal)_18%,transparent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--status-optimal)]">
+                Connected
+              </span>
+            )}
           </div>
 
           <div className="rounded-2xl border border-[var(--card-border)] bg-card p-4 space-y-4">
@@ -265,7 +268,7 @@ function WearablesPage() {
       )}
 
       <section className="mt-6 px-5">
-        <Eyebrow className="mb-2 px-1">Watches</Eyebrow>
+        <Eyebrow className="mb-2 px-1">Wearables</Eyebrow>
         <div className="overflow-hidden rounded-2xl border border-[var(--card-border)] bg-card">
           {watches.map((w, i) => {
             const isConnecting = connecting === w.name;
