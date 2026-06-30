@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { getOAuthUrl } from "@/services/wearablesFn";
 import {
   Activity,
   Apple,
@@ -47,45 +46,21 @@ export const Route = createFileRoute("/wearables")({
   },
 });
 
-const OW_USER_ID = import.meta.env.VITE_OW_USER_ID as string | undefined;
-
-const PROVIDERS = [
-  { name: "Whoop", icon: Waves, owProvider: "whoop" },
-  { name: "Apple Watch", icon: Apple, owProvider: "apple" },
-  { name: "Garmin", icon: Watch, owProvider: "garmin" },
-  { name: "Oura", icon: Watch, owProvider: "oura" },
-  { name: "Strava", icon: Activity, owProvider: "strava" },
-  { name: "Coros", icon: Watch, owProvider: null },
-  { name: "Fitbit", icon: Watch, owProvider: null },
-];
-
 function WearablesPage() {
   const [toast, setToast] = useState<string | null>(null);
-  const [connecting, setConnecting] = useState<string | null>(null);
   const { data: whoop, isLoading: whoopLoading, error: whoopError } = useWhoopData();
 
-  const handleConnect = async (name: string, owProvider: string | null) => {
-    if (!owProvider) {
-      setToast(`${name} — coming soon`);
-      setTimeout(() => setToast(null), 1800);
-      return;
-    }
-    if (!OW_USER_ID) {
-      setToast("No user ID configured — contact your coach");
-      setTimeout(() => setToast(null), 2500);
-      return;
-    }
-    setConnecting(name);
-    try {
-      const returnUrl = `${window.location.origin}/wearables`;
-      const authUrl = await getOAuthUrl({ data: { provider: owProvider, userId: OW_USER_ID, returnUrl } });
-      window.location.href = authUrl;
-    } catch {
-      setToast(`Could not connect ${name} — try again`);
-      setTimeout(() => setToast(null), 2500);
-    } finally {
-      setConnecting(null);
-    }
+  const watches = [
+    { name: "Apple Watch", icon: Apple, connected: false },
+    { name: "Garmin", icon: Watch, connected: false },
+    { name: "Coros", icon: Watch, connected: false },
+    { name: "Fitbit", icon: Watch, connected: false },
+    { name: "Amazefit", icon: Watch, connected: false },
+  ];
+
+  const handleConnect = (name: string) => {
+    setToast(`${name} — coming soon`);
+    setTimeout(() => setToast(null), 1800);
   };
 
   const recoveryColor =
@@ -140,18 +115,20 @@ function WearablesPage() {
           <Chip icon={<Flame className="h-3.5 w-3.5 text-primary" />}>Calories</Chip>
           <Chip icon={<Activity className="h-3.5 w-3.5 text-primary" />}>HRV</Chip>
         </div>
+
+        <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+          Supported smartwatches include Apple Watch, Garmin, Coros, Fitbit and Amazefit.
+        </p>
       </section>
 
-      {/* Whoop live data tile — shown once connected */}
+      {/* Whoop live tile — shown when VITE_OW_USER_ID is set */}
       {(whoopLoading || whoop || whoopError) && (
         <section className="mt-6 px-5">
           <div className="flex items-center justify-between mb-2">
             <Eyebrow className="px-1">Whoop</Eyebrow>
-            {whoop && !whoopError && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--status-optimal)_18%,transparent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--status-optimal)]">
-                Connected
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--status-optimal)_18%,transparent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--status-optimal)]">
+              Connected
+            </span>
           </div>
 
           <div className="rounded-2xl border border-[var(--card-border)] bg-card p-4 space-y-4">
@@ -167,6 +144,7 @@ function WearablesPage() {
 
             {whoop && (
               <>
+                {/* Recovery + vitals */}
                 <div className="grid grid-cols-3 gap-3">
                   <Metric
                     label="Recovery"
@@ -185,6 +163,7 @@ function WearablesPage() {
                   />
                 </div>
 
+                {/* 30-day context */}
                 <div
                   className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl px-3 py-2 text-xs"
                   style={{ backgroundColor: "var(--surface)" }}
@@ -207,6 +186,7 @@ function WearablesPage() {
                   )}
                 </div>
 
+                {/* Last sleep */}
                 {whoop.lastSleep && (
                   <div className="border-t pt-3" style={{ borderColor: "var(--card-border)" }}>
                     <Eyebrow className="mb-2">Last Sleep</Eyebrow>
@@ -228,6 +208,7 @@ function WearablesPage() {
                   </div>
                 )}
 
+                {/* Recent workouts */}
                 {whoop.recentWorkouts.length > 0 && (
                   <div className="border-t pt-3" style={{ borderColor: "var(--card-border)" }}>
                     <div className="flex items-center justify-between mb-2">
@@ -260,38 +241,61 @@ function WearablesPage() {
         </section>
       )}
 
-      {/* Provider connect list */}
       <section className="mt-6 px-5">
-        <Eyebrow className="mb-2 px-1">Wearables & Apps</Eyebrow>
+        <Eyebrow className="mb-2 px-1">Watches</Eyebrow>
         <div className="overflow-hidden rounded-2xl border border-[var(--card-border)] bg-card">
-          {PROVIDERS.map((p, i) => {
-            const isConnecting = connecting === p.name;
-            return (
-              <button
-                key={p.name}
-                type="button"
-                onClick={() => handleConnect(p.name, p.owProvider)}
-                disabled={isConnecting}
-                className={`flex w-full items-center justify-between px-4 py-3.5 text-left transition-opacity ${
-                  i !== 0 ? "border-t border-[var(--card-border)]" : ""
-                } ${isConnecting ? "opacity-60" : ""}`}
-              >
-                <span className="flex items-center gap-3">
-                  <p.icon className="h-4 w-4 text-foreground" />
-                  <span className="text-sm font-medium text-foreground">{p.name}</span>
-                  {!p.owProvider && (
-                    <span className="text-[11px] text-muted-foreground">Coming soon</span>
-                  )}
-                </span>
-                {isConnecting ? (
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-foreground" />
-                ) : p.owProvider ? (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                ) : null}
-              </button>
-            );
-          })}
+          {watches.map((w, i) => (
+            <button
+              key={w.name}
+              type="button"
+              onClick={() => handleConnect(w.name)}
+              className={`flex w-full items-center justify-between px-4 py-3.5 text-left ${
+                i !== 0 ? "border-t border-[var(--card-border)]" : ""
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <w.icon className="h-4 w-4 text-foreground" />
+                <span className="text-sm font-medium text-foreground">{w.name}</span>
+              </span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </button>
+          ))}
         </div>
+      </section>
+
+      <section className="mt-5 px-5">
+        <Eyebrow className="mb-2 px-1">Apps</Eyebrow>
+        <div className="overflow-hidden rounded-2xl border border-[var(--card-border)] bg-card">
+          <div className="flex items-center justify-between px-4 py-3.5">
+            <span className="flex items-center gap-3">
+              <span className="grid h-7 w-7 place-items-center rounded-md bg-[var(--accent-orange-soft)]">
+                <Activity className="h-4 w-4 text-primary" />
+              </span>
+              <span>
+                <span className="block text-sm font-medium text-foreground">Strava</span>
+                <span className="block text-[11px] text-muted-foreground">Runs auto-import into your weekly plan</span>
+              </span>
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--status-optimal)_18%,transparent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--status-optimal)]">
+              Connected
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-5 px-5">
+        <Eyebrow className="mb-2 px-1">Wearables</Eyebrow>
+        <button
+          type="button"
+          onClick={() => handleConnect("Other wearable")}
+          className="flex w-full items-center justify-between rounded-2xl border border-[var(--card-border)] bg-card px-4 py-3.5"
+        >
+          <span className="flex items-center gap-3">
+            <Activity className="h-4 w-4 text-foreground" />
+            <span className="text-sm font-medium text-foreground">Connect Wearable device</span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </button>
       </section>
 
       {toast && (
