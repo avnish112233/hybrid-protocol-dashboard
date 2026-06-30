@@ -76,7 +76,7 @@ function WearablesPage() {
     <main className="min-h-screen bg-background pb-16">
       <header className="relative px-5 pb-2 pt-5">
         <Link
-          to="/profile"
+          to="/"
           className="grid h-9 w-9 place-items-center rounded-full border border-[var(--card-border)] bg-card text-foreground"
           aria-label="Back"
         >
@@ -218,7 +218,7 @@ function WearablesPage() {
                       </span>
                     </div>
                     <ul className="divide-y" style={{ borderColor: "var(--card-border)" }}>
-                      {whoop.recentWorkouts.map((w, i) => (
+                      {whoop.recentWorkouts.map((w: { type: string; date: string; durationMin: number; avgHR?: number | null }, i: number) => (
                         <li key={i} className="flex items-center justify-between py-2 text-xs">
                           <span className="flex items-center gap-2">
                             <WorkoutBadge type={w.type} />

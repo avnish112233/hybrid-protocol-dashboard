@@ -58,7 +58,7 @@ function SessionPage() {
         style={{ background: "var(--gradient-header)" }}
       >
         <Link
-          to="/profile"
+          to="/"
           className="grid h-9 w-9 place-items-center rounded-full border border-[var(--card-border)] bg-card/80 text-foreground backdrop-blur"
           aria-label="Back"
         >

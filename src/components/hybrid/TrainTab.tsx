@@ -6,7 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "./Eyebrow";
-import { StreakBar } from "./StreakBar";
+import { TrainHeroCard } from "./TrainHeroCard";
 import { CelebrationBurst } from "./CelebrationBurst";
 import { RunSessionCard } from "./RunSessionCard";
 import { NotesCard } from "./NotesCard";
@@ -59,6 +59,8 @@ export function TrainTab() {
   const isDayComplete = (dayKey: string, exercises: Exercise[]) =>
     exercises.length > 0 && exercises.every((ex) => isCompleted(dayKey, ex.id));
 
+  const completedDays = weeklyPlan.filter((d) => isDayComplete(d.day, d.exercises)).length;
+
   const saveLog = (sets: SetRow[], exName: string, session: SessionType, day: string, exerciseId: string) => {
     const entry: LogEntry = { exerciseId, sets, day };
     const nextLogs = [
@@ -92,7 +94,7 @@ export function TrainTab() {
 
   return (
     <div className="space-y-5 p-5">
-      <StreakBar />
+      <TrainHeroCard completedCount={completedDays} />
 
       <section>
         <Eyebrow>This Week</Eyebrow>
@@ -121,32 +123,32 @@ export function TrainTab() {
                   <CelebrationBurst trigger={dayBurst.n} count={18} />
                 </span>
               )}
-              <AccordionTrigger className="px-4 py-3 hover:no-underline [&>svg]:hidden">
-                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 w-full">
-                  <div className="text-left">
+              <AccordionTrigger className="px-3 py-2 hover:no-underline [&>svg]:hidden">
+                <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+                  <div className="text-left leading-tight">
                     <div
-                      className="text-base leading-none text-foreground"
-                      style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}
+                      className="text-[13px] tabular-nums text-foreground"
+                      style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
                     >
-                      {day.day}
-                    </div>
-                    <div className="mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                       {day.date}
                     </div>
+                    <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {day.day}
+                    </div>
                   </div>
-                  <div className="min-w-0 text-left">
+                  <div className="flex min-w-0 items-center gap-2 text-left">
                     <span
                       className={cn(
-                        "inline-block rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
+                        "shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider",
                         chipClass[day.session],
                       )}
                     >
                       {day.session}
                     </span>
-                    <div className="mt-1 truncate text-xs text-muted-foreground">{day.focus}</div>
+                    <span className="truncate text-[11px] text-muted-foreground">{day.focus}</span>
                   </div>
                   {dayDone ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--status-optimal)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--status-optimal)] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white">
                       <Check className="h-3 w-3" /> Done
                     </span>
                   ) : (
@@ -277,8 +279,15 @@ function HistorySection({ history }: { history: HistoryEntry[] }) {
                 <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                   {h.date}
                 </span>
-                <span className="truncate text-sm font-medium text-foreground">{h.session}</span>
-                <span className="text-[11px] text-muted-foreground">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-medium text-foreground">{h.session}</div>
+                  {h.avgHr !== undefined && (
+                    <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
+                      ♥ {h.avgHr} bpm avg
+                    </div>
+                  )}
+                </div>
+                <span className="text-[11px] text-muted-foreground tabular-nums">
                   {h.exercisesCompleted} ex · {h.totalVolume.toLocaleString()} kg
                 </span>
               </div>
