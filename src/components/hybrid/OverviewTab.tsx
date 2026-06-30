@@ -48,10 +48,14 @@ export function OverviewTab() {
   ];
 
   return (
-    <div className="space-y-4 px-5 pb-8 pt-2">
+    <div className="space-y-5 px-5 pb-8 pt-2">
       <QuadrantChart />
       {sliders.map((s) => (
-        <BenchmarkSlider key={s.label} {...s} />
+        <BenchmarkSlider
+          key={s.label}
+          {...s}
+          direction={s.label === "VO2 MAX" ? "sequential" : "symmetric"}
+        />
       ))}
       <FunctionalScores />
       <RetestCard />

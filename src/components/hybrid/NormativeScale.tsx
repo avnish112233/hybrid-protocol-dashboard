@@ -12,9 +12,11 @@ export interface Scale {
 export function NormativeScale({
   value,
   scale,
+  direction = "sequential",
 }: {
   value: number;
   scale: Scale;
+  direction?: "symmetric" | "sequential";
 }) {
   const { min, max, optimalLow, optimalHigh } = scale;
   const pct = (n: number) =>
@@ -27,7 +29,7 @@ export function NormativeScale({
   const oHigh = pct(optimalHigh);
   const nHigh = pct(optimalHigh + tol);
 
-  const bg = `linear-gradient(to right,
+  const symmetricBg = `linear-gradient(to right,
     var(--status-suboptimal) 0%,
     var(--status-suboptimal) ${nLow}%,
     var(--status-normal) ${nLow}%,
@@ -39,16 +41,30 @@ export function NormativeScale({
     var(--status-suboptimal) ${nHigh}%,
     var(--status-suboptimal) 100%)`;
 
+  const sequentialBg = `linear-gradient(to right,
+    var(--status-suboptimal) 0%,
+    var(--status-suboptimal) ${nLow}%,
+    var(--status-normal) ${nLow}%,
+    var(--status-normal) ${oLow}%,
+    var(--status-optimal) ${oLow}%,
+    var(--status-optimal) 100%)`;
+
+  const bg = direction === "sequential" ? sequentialBg : symmetricBg;
+
   const fmt = (n: number) =>
     Number.isInteger(n) ? `${n}` : n.toFixed(n < 10 ? 2 : 1);
 
   return (
     <div className="mt-2 w-full">
       <div className="relative h-1.5 w-full overflow-hidden rounded-full opacity-90" style={{ background: bg }} />
-      <div className="relative h-7 mt-1">
+      <div className="relative h-7 mt-2">
         <YouAreHereMarker leftPct={pct(value)} color={statusColor[status]} />
       </div>
-      <ZoneLabels breakpoints={[nLow, oLow, oHigh, nHigh]} />
+      {direction === "sequential" ? (
+        <SequentialZoneLabels breakpoints={[nLow, oLow]} />
+      ) : (
+        <ZoneLabels breakpoints={[nLow, oLow, oHigh, nHigh]} />
+      )}
       <div className="mt-1 flex justify-between text-[9px] font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
         <span>{fmt(min)}{scale.unit ? ` ${scale.unit}` : ""}</span>
         <span>{fmt(max)}{scale.unit ? ` ${scale.unit}` : ""}</span>
@@ -69,11 +85,35 @@ function ZoneLabels({ breakpoints }: { breakpoints: [number, number, number, num
     "var(--status-suboptimal)",
   ];
   return (
-    <div className="relative mt-1 h-3 w-full">
+    <div className="relative mt-2 h-3 w-full">
       {mids.map((m, i) => (
         <span
           key={i}
-          className="absolute top-0 -translate-x-1/2 whitespace-nowrap text-[8px] font-semibold uppercase tracking-wider"
+          className="absolute top-0 -translate-x-1/2 whitespace-nowrap text-[7px] font-semibold uppercase tracking-tight"
+          style={{ left: `${m}%`, color: colors[i] }}
+        >
+          {labels[i]}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function SequentialZoneLabels({ breakpoints }: { breakpoints: [number, number] }) {
+  const [b1, b2] = breakpoints;
+  const mids = [b1 / 2, (b1 + b2) / 2, (b2 + 100) / 2];
+  const labels = ["Suboptimal", "Normal", "Optimal"];
+  const colors = [
+    "var(--status-suboptimal)",
+    "var(--status-normal)",
+    "var(--status-optimal)",
+  ];
+  return (
+    <div className="relative mt-2 h-3 w-full">
+      {mids.map((m, i) => (
+        <span
+          key={i}
+          className="absolute top-0 -translate-x-1/2 whitespace-nowrap text-[7px] font-semibold uppercase tracking-tight"
           style={{ left: `${m}%`, color: colors[i] }}
         >
           {labels[i]}
