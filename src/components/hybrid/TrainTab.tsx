@@ -10,6 +10,8 @@ import { TrainHeroCard } from "./TrainHeroCard";
 import { CelebrationBurst } from "./CelebrationBurst";
 import { RunSessionCard } from "./RunSessionCard";
 import { NotesCard } from "./NotesCard";
+import { useBondPlan, useToggleBondSession } from "@/hooks/useBondPlan";
+import type { TrainingWeek } from "@/services/bondApi";
 import {
   weeklyPlan,
   history as initialHistory,
@@ -92,9 +94,15 @@ export function TrainTab() {
     }
   };
 
+  const { data: bondPlan } = useBondPlan();
+  const toggleBondSession = useToggleBondSession();
+
   return (
     <div className="space-y-5 p-5">
       <TrainHeroCard completedCount={completedDays} />
+
+      {/* Coach-prescribed plan from Bond */}
+      {bondPlan && <BondPlanSection plan={bondPlan} onToggle={(wn, si) => toggleBondSession.mutate({ planId: bondPlan.id, weekNumber: wn, sessionIndex: si })} />}
 
       <section>
         <Eyebrow>This Week</Eyebrow>
@@ -258,6 +266,112 @@ export function TrainTab() {
         }}
       />
     </div>
+  );
+}
+
+const SESSION_TYPE_COLORS: Record<string, { bg: string; color: string }> = {
+  running:  { bg: "#F2F5FB", color: "#2A4A9B" },
+  strength: { bg: "#F2F8F5", color: "#1B6B45" },
+  recovery: { bg: "#F5F2FB", color: "#6B3BA5" },
+  mobility: { bg: "#FBF8F2", color: "#A5851B" },
+  cardio:   { bg: "#FDF3F3", color: "#B03030" },
+  hybrid:   { bg: "#F5F5F5", color: "#555555" },
+};
+
+function BondPlanSection({ plan, onToggle }: { plan: { id: string; title: string | null; weeks: TrainingWeek[] }; onToggle: (weekNumber: number, sessionIndex: number) => void }) {
+  const [weekIdx, setWeekIdx] = useState(0);
+  const week = plan.weeks[weekIdx];
+  if (!week) return null;
+
+  const completedCount = week.sessions.filter(s => s.completed).length;
+  const totalCount = week.sessions.length;
+
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-1">
+        <Eyebrow>Coach Plan</Eyebrow>
+        <span className="text-[10px] text-muted-foreground">{completedCount}/{totalCount} done</span>
+      </div>
+      {plan.title && (
+        <h2 className="text-xl tracking-tight text-foreground mb-3" style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}>
+          {plan.title}
+        </h2>
+      )}
+
+      {/* Week tabs */}
+      {plan.weeks.length > 1 && (
+        <div className="flex gap-1 mb-3 p-1 rounded-xl bg-surface">
+          {plan.weeks.map((w, i) => (
+            <button
+              key={w.weekNumber}
+              type="button"
+              onClick={() => setWeekIdx(i)}
+              className="flex-1 py-1.5 rounded-lg text-xs font-medium transition-all"
+              style={{
+                backgroundColor: weekIdx === i ? "var(--card)" : "transparent",
+                color: weekIdx === i ? "var(--foreground)" : "var(--muted-foreground)",
+                boxShadow: weekIdx === i ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+              }}
+            >
+              Week {w.weekNumber}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Progress bar */}
+      <div className="h-1 rounded-full mb-3 overflow-hidden bg-surface">
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: totalCount > 0 ? `${(completedCount / totalCount) * 100}%` : "0%", backgroundColor: "var(--status-optimal)" }}
+        />
+      </div>
+
+      <div className="space-y-2">
+        {week.sessions.map((session, idx) => {
+          const typeColors = SESSION_TYPE_COLORS[session.type] ?? SESSION_TYPE_COLORS.hybrid;
+          return (
+            <div
+              key={idx}
+              className="rounded-2xl border p-4 flex items-start gap-3 transition-colors"
+              style={{
+                backgroundColor: session.completed ? "color-mix(in oklab, var(--status-optimal) 10%, var(--card))" : "var(--card)",
+                borderColor: session.completed ? "color-mix(in oklab, var(--status-optimal) 30%, transparent)" : "var(--card-border)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => onToggle(week.weekNumber, idx)}
+                className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors border-2"
+                style={{
+                  backgroundColor: session.completed ? "var(--status-optimal)" : "transparent",
+                  borderColor: session.completed ? "var(--status-optimal)" : "var(--card-border)",
+                }}
+              >
+                {session.completed && <Check className="h-3 w-3 text-white" />}
+              </button>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                  <span className="text-xs text-muted-foreground">{session.day}</span>
+                  <span
+                    className="text-[10px] px-2 py-0.5 rounded-full capitalize font-medium"
+                    style={typeColors}
+                  >
+                    {session.type}
+                  </span>
+                </div>
+                <p className="text-sm font-medium" style={{ color: session.completed ? "var(--muted-foreground)" : "var(--foreground)", textDecoration: session.completed ? "line-through" : "none" }}>
+                  {session.title}
+                </p>
+                {session.details && (
+                  <p className="text-xs mt-1 leading-relaxed text-muted-foreground">{session.details}</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
