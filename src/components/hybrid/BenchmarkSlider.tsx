@@ -70,14 +70,42 @@ export function BenchmarkSlider({
       </div>
 
       <div className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full opacity-90" style={{ background: trackBg }} />
-      <div className="relative h-5">
+      <div className="relative h-7 mt-1">
         <YouAreHereMarker leftPct={pct(value)} color={sColor} />
       </div>
-      <div className="mt-0.5 flex justify-between text-[9px] font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
+      <ZoneLabels
+        breakpoints={[normalLowPct, optimalLowPct, optimalHighPct, normalHighPct]}
+      />
+      <div className="mt-1 flex justify-between text-[9px] font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
         <span>{min}{unit === "%" ? "%" : ""}</span>
-        <span>Optimal {benchmarkLow}–{benchmarkHigh}</span>
         <span>{max}{unit === "%" ? "%" : ""}</span>
       </div>
     </section>
+  );
+}
+
+function ZoneLabels({ breakpoints }: { breakpoints: [number, number, number, number] }) {
+  const [b1, b2, b3, b4] = breakpoints;
+  const mids = [b1 / 2, (b1 + b2) / 2, (b2 + b3) / 2, (b3 + b4) / 2, (b4 + 100) / 2];
+  const labels = ["Suboptimal", "Normal", "Optimal", "Normal", "Suboptimal"];
+  const colors = [
+    "var(--status-suboptimal)",
+    "var(--status-normal)",
+    "var(--status-optimal)",
+    "var(--status-normal)",
+    "var(--status-suboptimal)",
+  ];
+  return (
+    <div className="relative mt-1 h-3 w-full">
+      {mids.map((m, i) => (
+        <span
+          key={i}
+          className="absolute top-0 -translate-x-1/2 whitespace-nowrap text-[8px] font-semibold uppercase tracking-wider"
+          style={{ left: `${m}%`, color: colors[i] }}
+        >
+          {labels[i]}
+        </span>
+      ))}
+    </div>
   );
 }

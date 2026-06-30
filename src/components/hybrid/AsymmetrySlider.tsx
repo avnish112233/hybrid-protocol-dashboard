@@ -44,7 +44,7 @@ export function AsymmetrySlider({ percent }: { percent: number }) {
         {/* center tick */}
         <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-background/70" />
       </div>
-      <div className="relative h-5">
+      <div className="relative h-7 mt-1">
         <YouAreHereMarker leftPct={toPct(clamped)} color={statusColor[status]} />
       </div>
       <div className="mt-0.5 flex justify-between text-[9px] font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
