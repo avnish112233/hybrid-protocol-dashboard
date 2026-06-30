@@ -31,7 +31,7 @@ export function YouAreHereMarker({
         </span>
         <span
           className="mt-0.5 block h-3 w-[2px] rounded-full"
-          style={{ backgroundColor: color }}
+          style={{ backgroundColor: "#222222" }}
         />
       </div>
     </div>

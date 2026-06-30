@@ -10,6 +10,7 @@ interface Props {
   benchmarkHigh: number;
   min: number;
   max: number;
+  direction?: "symmetric" | "sequential";
 }
 
 export function BenchmarkSlider({
@@ -21,6 +22,7 @@ export function BenchmarkSlider({
   benchmarkHigh,
   min,
   max,
+  direction = "symmetric",
 }: Props) {
   const pct = (n: number) => Math.max(0, Math.min(100, ((n - min) / (max - min)) * 100));
   const status = getBenchmarkStatus(value, benchmarkLow, benchmarkHigh, min, max);
@@ -31,7 +33,7 @@ export function BenchmarkSlider({
   const optimalHighPct = pct(benchmarkHigh);
   const normalHighPct = pct(benchmarkHigh + tol);
 
-  const trackBg = `linear-gradient(to right,
+  const symmetricBg = `linear-gradient(to right,
     var(--status-suboptimal) 0%,
     var(--status-suboptimal) ${normalLowPct}%,
     var(--status-normal) ${normalLowPct}%,
@@ -42,6 +44,19 @@ export function BenchmarkSlider({
     var(--status-normal) ${normalHighPct}%,
     var(--status-suboptimal) ${normalHighPct}%,
     var(--status-suboptimal) 100%)`;
+
+  // Sequential: suboptimal -> normal -> optimal, low to high. Boundaries derived from optimalLow/High.
+  const seqNormalEnd = optimalLowPct;
+  const seqOptimalStart = optimalLowPct;
+  const sequentialBg = `linear-gradient(to right,
+    var(--status-suboptimal) 0%,
+    var(--status-suboptimal) ${normalLowPct}%,
+    var(--status-normal) ${normalLowPct}%,
+    var(--status-normal) ${seqNormalEnd}%,
+    var(--status-optimal) ${seqOptimalStart}%,
+    var(--status-optimal) 100%)`;
+
+  const trackBg = direction === "sequential" ? sequentialBg : symmetricBg;
 
   const sColor = statusColor[status];
   return (
@@ -70,12 +85,16 @@ export function BenchmarkSlider({
       </div>
 
       <div className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full opacity-90" style={{ background: trackBg }} />
-      <div className="relative h-7 mt-1">
+      <div className="relative h-7 mt-2">
         <YouAreHereMarker leftPct={pct(value)} color={sColor} />
       </div>
-      <ZoneLabels
-        breakpoints={[normalLowPct, optimalLowPct, optimalHighPct, normalHighPct]}
-      />
+      {direction === "sequential" ? (
+        <SequentialZoneLabels breakpoints={[normalLowPct, seqNormalEnd]} />
+      ) : (
+        <ZoneLabels
+          breakpoints={[normalLowPct, optimalLowPct, optimalHighPct, normalHighPct]}
+        />
+      )}
       <div className="mt-1 flex justify-between text-[9px] font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
         <span>{min}{unit === "%" ? "%" : ""}</span>
         <span>{max}{unit === "%" ? "%" : ""}</span>
@@ -96,11 +115,35 @@ function ZoneLabels({ breakpoints }: { breakpoints: [number, number, number, num
     "var(--status-suboptimal)",
   ];
   return (
-    <div className="relative mt-1 h-3 w-full">
+    <div className="relative mt-2 h-3 w-full">
       {mids.map((m, i) => (
         <span
           key={i}
-          className="absolute top-0 -translate-x-1/2 whitespace-nowrap text-[8px] font-semibold uppercase tracking-wider"
+          className="absolute top-0 -translate-x-1/2 whitespace-nowrap text-[7px] font-semibold uppercase tracking-tight"
+          style={{ left: `${m}%`, color: colors[i] }}
+        >
+          {labels[i]}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function SequentialZoneLabels({ breakpoints }: { breakpoints: [number, number] }) {
+  const [b1, b2] = breakpoints;
+  const mids = [b1 / 2, (b1 + b2) / 2, (b2 + 100) / 2];
+  const labels = ["Suboptimal", "Normal", "Optimal"];
+  const colors = [
+    "var(--status-suboptimal)",
+    "var(--status-normal)",
+    "var(--status-optimal)",
+  ];
+  return (
+    <div className="relative mt-2 h-3 w-full">
+      {mids.map((m, i) => (
+        <span
+          key={i}
+          className="absolute top-0 -translate-x-1/2 whitespace-nowrap text-[7px] font-semibold uppercase tracking-tight"
           style={{ left: `${m}%`, color: colors[i] }}
         >
           {labels[i]}

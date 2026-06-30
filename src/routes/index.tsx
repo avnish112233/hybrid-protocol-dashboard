@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { ProfileHeader } from "@/components/hybrid/ProfileHeader";
 import { TabBar } from "@/components/hybrid/TabBar";
 import { OverviewTab } from "@/components/hybrid/OverviewTab";
 import { TrainTab } from "@/components/hybrid/TrainTab";
+import { isSignedIn } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,6 +21,10 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const [tab, setTab] = useState<"overview" | "train">("train");
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!isSignedIn()) navigate({ to: "/login", replace: true });
+  }, [navigate]);
   return (
     <main className="min-h-screen bg-background">
       <ProfileHeader />
